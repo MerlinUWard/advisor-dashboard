@@ -21,18 +21,16 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install supabase
+          pip install -r data-sync/requirements.txt
 
       - name: Run Drive sync
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
-        run: |
-          if [ -f "data-sync/sync_drive.py" ]; then
-            python data-sync/sync_drive.py
-          else
-            echo "sync_drive.py not yet added — skipping Drive sync"
-          fi
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          DRIVE_CLIENTS_FOLDER_ID: ${{ secrets.DRIVE_CLIENTS_FOLDER_ID }}
+          DRIVE_META_FILE_ID: ${{ secrets.DRIVE_META_FILE_ID }}
+        run: python data-sync/sync_drive.py
 
       - name: Run Gong sync
         env:
@@ -40,9 +38,4 @@ jobs:
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           GONG_ACCESS_KEY: ${{ secrets.GONG_ACCESS_KEY }}
           GONG_ACCESS_SECRET: ${{ secrets.GONG_ACCESS_SECRET }}
-        run: |
-          if [ -f "data-sync/sync_gong.py" ]; then
-            python data-sync/sync_gong.py
-          else
-            echo "sync_gong.py not yet added — skipping Gong sync"
-          fi
+        run: python data-sync/sync_gong.py
