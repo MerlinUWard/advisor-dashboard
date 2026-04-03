@@ -1,0 +1,48 @@
+name: Nightly Data Sync
+
+on:
+  schedule:
+    # Runs every night at midnight UTC (7pm ET / 8pm CT)
+    - cron: '0 0 * * *'
+  workflow_dispatch:  # Allow manual trigger from GitHub Actions tab
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install supabase
+
+      - name: Run Drive sync
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          if [ -f "data-sync/sync_drive.py" ]; then
+            python data-sync/sync_drive.py
+          else
+            echo "sync_drive.py not yet added — skipping Drive sync"
+          fi
+
+      - name: Run Gong sync
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          GONG_ACCESS_KEY: ${{ secrets.GONG_ACCESS_KEY }}
+          GONG_ACCESS_SECRET: ${{ secrets.GONG_ACCESS_SECRET }}
+        run: |
+          if [ -f "data-sync/sync_gong.py" ]; then
+            python data-sync/sync_gong.py
+          else
+            echo "sync_gong.py not yet added — skipping Gong sync"
+          fi
