@@ -86,8 +86,8 @@ def build_drive_client():
     return build("drive", "v3", credentials=creds)
 
 def download_json_file(drive, file_id: str) -> dict:
-    """Download a JSON file from Drive by file ID."""
-    request = drive.files().get_media(fileId=file_id)
+    """Download a JSON file from Drive by file ID (supports shared drives)."""
+    request = drive.files().get_media(fileId=file_id, supportsAllDrives=True)
     buf = io.BytesIO()
     downloader = MediaIoBaseDownload(buf, request)
     done = False
@@ -97,11 +97,16 @@ def download_json_file(drive, file_id: str) -> dict:
     return json.loads(buf.read().decode("utf-8"))
 
 def list_client_files(drive, folder_id: str) -> list[dict]:
-    """List all .json files in the clients Drive folder."""
+    """List all .json files in the clients Drive folder.
+    Uses name-based filter instead of MIME type to handle uploads via Drive UI
+    which may assign application/octet-stream instead of application/json.
+    """
     results = drive.files().list(
-        q=f"'{folder_id}' in parents and mimeType='application/json' and trashed=false",
+        q=f"'{folder_id}' in parents and name contains '.json' and trashed=false",
         fields="files(id, name)",
         pageSize=100,
+        supportsAllDrives=True,
+        includeItemsFromAllDrives=True,
     ).execute()
     return results.get("files", [])
 
