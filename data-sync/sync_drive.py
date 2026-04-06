@@ -257,6 +257,12 @@ def main():
 
     drive = build_drive_client()
     sb = build_supabase_client()
+    # Print service account email to help with Drive sharing setup
+    try:
+        sa_email = json.loads(GOOGLE_SA_JSON).get("client_email", "unknown")
+        print(f"🔑 Service account: {sa_email}")
+    except Exception:
+        pass
 
     # --- Load setup data to get advisor map ---
     # (If DRIVE_META_FILE_ID is set, also read meta.json for MOI scores)
