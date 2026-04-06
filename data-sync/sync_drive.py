@@ -111,7 +111,7 @@ def build_supabase_client():
 
 # ── sync helpers ───────────────────────────────────────────────────────────────
 def sync_client(sb, client_data: dict, advisor_map: dict):
-    """Upsert one client and all their projects + tasks to Supabase."""
+    """Upsert one client, all their projects + tasks, and call summaries to Supabase."""
     slug = client_data.get("slug") or client_data.get("id")
     name = client_data.get("name", "Unknown")
 
@@ -166,6 +166,11 @@ def sync_client(sb, client_data: dict, advisor_map: dict):
                     "sort_order": i,
                 }, on_conflict="id").execute()
 
+    # --- Call summaries ---
+    n_calls = sync_call_summaries(sb, slug, client_data)
+    if n_calls:
+        print(f"     ↳ {n_calls} call summary rows synced")
+
 def sync_moi_scores(sb, meta_data: dict):
     """Sync MOI scores from meta.json → clients table."""
     moi_values = meta_data.get("moi_last_values", {})
@@ -178,6 +183,43 @@ def sync_moi_scores(sb, meta_data: dict):
         print(f"  → {client_id}: {score}")
         if not DRY_RUN:
             sb.table("clients").update({"moi_score": score}).eq("id", client_id).execute()
+
+def sync_call_summaries(sb, client_id: str, client_data: dict):
+    """Upsert advisor call summaries for one client to Supabase."""
+    acs = client_data.get("advisor_call_summaries", {})
+    if not acs:
+        return 0
+
+    rows = []
+    for role in ("operations", "finance", "marketing"):
+        for entry in acs.get(role, []):
+            call_date = entry.get("call_date")
+            if not call_date:
+                continue
+            rows.append({
+                "client_id": client_id,
+                "advisor_id": entry.get("advisor_id", ""),
+                "role": role,
+                "call_date": call_date,
+                "gong_call_id": entry.get("gong_call_id"),
+                "summary": entry.get("summary"),
+                "key_topics": entry.get("key_topics", []),
+                "sentiment": entry.get("sentiment"),
+                "moi_score": entry.get("moi_score"),
+                "call_summary_detail": entry.get("call_summary_detail"),
+                "gong_recording_link": entry.get("gong_recording_link"),
+            })
+
+    if not rows:
+        return 0
+
+    if not DRY_RUN:
+        sb.table("advisor_call_summaries").upsert(
+            rows,
+            on_conflict="client_id,role,call_date"
+        ).execute()
+
+    return len(rows)
 
 def _resolve_adv(adv_uuid: str | None, advisor_map: dict) -> str | None:
     """Map advisor UUID → short label (O, M, F) for the dashboard pill."""
@@ -205,7 +247,7 @@ def main():
     if DRY_RUN:
         print("📂 Would connect to Google Drive and read client JSON files")
         print("📂 Would read meta.json for MOI scores")
-        print("📂 Would upsert all clients, projects, tasks to Supabase")
+        print("📂 Would upsert all clients, projects, tasks, and call summaries to Supabase")
         return
 
     drive = build_drive_client()
