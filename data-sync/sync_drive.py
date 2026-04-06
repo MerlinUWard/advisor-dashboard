@@ -280,6 +280,18 @@ def main():
 
     # --- List and sync all client files ---
     print(f"\n📂 Listing client files in folder: {DRIVE_CLIENTS_FOLDER_ID}")
+    # Debug: list ALL files in folder regardless of type to diagnose 0-result issues
+    debug_results = drive.files().list(
+        q=f"'{DRIVE_CLIENTS_FOLDER_ID}' in parents and trashed=false",
+        fields="files(id, name, mimeType)",
+        pageSize=50,
+        supportsAllDrives=True,
+        includeItemsFromAllDrives=True,
+    ).execute()
+    debug_files = debug_results.get("files", [])
+    print(f"   [debug] All files in folder (any type): {len(debug_files)}")
+    for df in debug_files[:10]:
+        print(f"     - {df['name']} ({df['mimeType']})")
     files = list_client_files(drive, DRIVE_CLIENTS_FOLDER_ID)
     print(f"   Found {len(files)} client files\n")
 
