@@ -189,19 +189,36 @@ def sync_moi_scores(sb, meta_data: dict):
         if not DRY_RUN:
             sb.table("clients").update({"moi_score": score}).eq("id", client_id).execute()
 
+_VALID_SENTIMENTS = {"positive", "neutral", "cautious", "negative"}
+_SENTIMENT_FALLBACK = {
+    "mixed": "neutral",
+    "positive/neutral": "neutral",
+    "cautious/neutral": "cautious",
+}
+
+def _normalize_sentiment(s: str | None) -> str | None:
+    if not s:
+        return None
+    s = s.lower().strip()
+    if s in _VALID_SENTIMENTS:
+        return s
+    return _SENTIMENT_FALLBACK.get(s, "neutral")
+
 def sync_call_summaries(sb, client_id: str, client_data: dict):
     """Upsert advisor call summaries for one client to Supabase."""
     acs = client_data.get("advisor_call_summaries", {})
     if not acs:
         return 0
 
-    rows = []
+    # Build rows; deduplicate on (role, call_date) keeping highest moi_score
+    seen: dict[tuple, dict] = {}
     for role in ("operations", "finance", "marketing"):
         for entry in acs.get(role, []):
             call_date = entry.get("call_date")
             if not call_date:
                 continue
-            rows.append({
+            key = (role, call_date)
+            row = {
                 "client_id": client_id,
                 "advisor_id": entry.get("advisor_id", ""),
                 "role": role,
@@ -209,12 +226,17 @@ def sync_call_summaries(sb, client_id: str, client_data: dict):
                 "gong_call_id": entry.get("gong_call_id"),
                 "summary": entry.get("summary"),
                 "key_topics": entry.get("key_topics", []),
-                "sentiment": entry.get("sentiment"),
+                "sentiment": _normalize_sentiment(entry.get("sentiment")),
                 "moi_score": entry.get("moi_score"),
                 "call_summary_detail": entry.get("call_summary_detail"),
                 "gong_recording_link": entry.get("gong_recording_link"),
-            })
+            }
+            # When two calls share the same (role, call_date), keep higher score
+            existing = seen.get(key)
+            if existing is None or (row["moi_score"] or 0) > (existing["moi_score"] or 0):
+                seen[key] = row
 
+    rows = list(seen.values())
     if not rows:
         return 0
 
