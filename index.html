@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Disciplined — Dashboard</title>
+<script>
+(function(){var m=document.cookie.match(/(?:^|;\s*)theme=([^;]+)/);if(m)document.documentElement.setAttribute('data-theme',m[1]);})();
+</script>
 <style>
 /* ── THEME TOKENS ─────────────────────────────────────────────────────────── */
 :root{
@@ -323,7 +326,9 @@ function clientNextDue(c){
 // ─── ROUTER ──────────────────────────────────────────────────────────────────
 function toggleTheme(){
   const h=document.documentElement;
-  h.setAttribute('data-theme',h.getAttribute('data-theme')==='dark'?'light':'dark');
+  const t=h.getAttribute('data-theme')==='dark'?'light':'dark';
+  h.setAttribute('data-theme',t);
+  document.cookie='theme='+t+';max-age=31536000;path=/';
   _syncThemeButtons();
 }
 function _syncThemeButtons(){
