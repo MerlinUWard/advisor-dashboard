@@ -304,7 +304,7 @@ function upcomingTasks(){
   CLIENTS.forEach(c=>{
     c.projects.forEach((p,pi)=>{
       p.tasks.filter(t=>!t.completed&&t.due_date&&t.due_date.slice(0,10)<=IN7).forEach(t=>{
-        rows.push({clientName:c.name,clientSlug:c.slug,projIdx:pi,projName:p.name,taskTitle:t.title,due:t.due_date.slice(0,10)});
+        rows.push({clientName:c.name,clientSlug:c.slug,projIdx:pi,projName:p.name,taskTitle:t.title,due:t.due_date.slice(0,10),adv:t.adv||p.adv||''});
       });
     });
   });
@@ -356,11 +356,11 @@ function renderTeam(){
 
   function upcomingRow(r){
     const isToday=r.due===TODAY;
-    return `<div class="upcoming-row${isToday?' today-row':''}" onclick="navigate('client','${r.clientSlug}',${r.projIdx})">
+    return `<div class="upcoming-row${isToday?' today-row':''}" data-adv="${r.adv||''}" onclick="navigate('client','${r.clientSlug}',${r.projIdx})">
       <span style="font-size:13px;font-weight:${isToday?'700':'400'};color:${isToday?'#B45309':'#94A3B8'};">${fmtDate(r.due)}${isToday?' ⚡':''}</span>
       <span style="font-size:13px;font-weight:500;">${esc(r.clientName)}</span>
       <span style="font-size:13px;color:#64748B;">${esc(r.projName.length>22?r.projName.substring(0,22)+'…':r.projName)}</span>
-      <span style="font-size:13px;">${esc(r.taskTitle.length>60?r.taskTitle.substring(0,60)+'…':r.taskTitle)}</span>
+      <span style="font-size:13px;display:flex;align-items:center;gap:6px;">${r.adv?advBadge(r.adv):''}${esc(r.taskTitle.length>55?r.taskTitle.substring(0,55)+'…':r.taskTitle)}</span>
     </div>`;
   }
 
@@ -418,10 +418,32 @@ function renderTeam(){
     </div>
 
     <div style="margin-bottom:36px;">
-      <div class="sec-label">UPCOMING — NEXT 7 DAYS (${upcoming.length} tasks)</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <div class="sec-label" style="margin-bottom:0;" id="upcoming-label">UPCOMING — NEXT 7 DAYS (${upcoming.length} tasks)</div>
+        <div style="position:relative;">
+          <button onclick="_toggleAdvFilter(event)" id="adv-filter-btn" style="display:flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:5px 12px;font-size:12px;font-weight:600;color:var(--text-2);cursor:pointer;">
+            <span id="adv-filter-label">Advisor: All</span>
+            <span style="font-size:9px;opacity:.6;">▼</span>
+          </button>
+          <div id="adv-filter-dropdown" style="display:none;position:absolute;right:0;top:calc(100% + 4px);background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow-md);padding:10px 14px;z-index:100;min-width:150px;">
+            <label style="display:flex;align-items:center;gap:8px;padding:5px 0;font-size:13px;cursor:pointer;white-space:nowrap;">
+              <input type="checkbox" id="af-O" onchange="_onAdvFilterChange()" style="cursor:pointer;"> <span class="badge badge-ops" style="font-size:10px;padding:2px 8px;">OPS</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;padding:5px 0;font-size:13px;cursor:pointer;white-space:nowrap;">
+              <input type="checkbox" id="af-F" onchange="_onAdvFilterChange()" style="cursor:pointer;"> <span class="badge badge-fin" style="font-size:10px;padding:2px 8px;">FIN</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;padding:5px 0;font-size:13px;cursor:pointer;white-space:nowrap;">
+              <input type="checkbox" id="af-M" onchange="_onAdvFilterChange()" style="cursor:pointer;"> <span class="badge badge-mkt" style="font-size:10px;padding:2px 8px;">MKTG</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;padding:5px 0;font-size:13px;cursor:pointer;white-space:nowrap;">
+              <input type="checkbox" id="af-" onchange="_onAdvFilterChange()" style="cursor:pointer;"> Unassigned
+            </label>
+          </div>
+        </div>
+      </div>
       ${upcoming.length===0
         ?`<div class="card" style="text-align:center;color:#94A3B8;padding:32px;">🎉 No tasks due in the next 7 days</div>`
-        :`<div class="upcoming-table">
+        :`<div class="upcoming-table" id="upcoming-table">
             <div class="upcoming-header">
               <span style="font-size:11px;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:.05em;">Due</span>
               <span style="font-size:11px;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:.05em;">Client</span>
@@ -642,11 +664,61 @@ function renderLoading(){
 }
 
 // ─── MAIN RENDER ─────────────────────────────────────────────────────────────
+// ─── ADVISOR FILTER (UPCOMING TABLE) ─────────────────────────────────────────
+function _readAdvFilterCookie(){
+  const m=document.cookie.match(/(?:^|;\s*)advFilter=([^;]+)/);
+  return m?JSON.parse(decodeURIComponent(m[1])):null;
+}
+function _writeAdvFilterCookie(checked){
+  document.cookie='advFilter='+encodeURIComponent(JSON.stringify(checked))+';max-age=31536000;path=/';
+}
+function _applyAdvFilter(){
+  const checkboxIds=['af-O','af-F','af-M','af-'];
+  const checked=checkboxIds.map(id=>{const el=document.getElementById(id);return el&&el.checked?id.replace('af-',''):null;}).filter(v=>v!==null);
+  const allChecked=checked.length===0||checked.length===4;
+  const rows=document.querySelectorAll('#upcoming-table .upcoming-row[data-adv]');
+  let visible=0;
+  rows.forEach(row=>{
+    const adv=row.getAttribute('data-adv')||'';
+    const show=allChecked||checked.includes(adv);
+    row.style.display=show?'':'none';
+    if(show) visible++;
+  });
+  const label=document.getElementById('upcoming-label');
+  if(label) label.textContent='UPCOMING — NEXT 7 DAYS ('+(allChecked?rows.length:visible)+' of '+rows.length+' tasks)';
+  const btnLabel=document.getElementById('adv-filter-label');
+  if(btnLabel) btnLabel.textContent=allChecked?'Advisor: All':'Advisor: '+checked.map(a=>a==='O'?'OPS':a==='F'?'FIN':a==='M'?'MKTG':'Unassigned').join(', ');
+}
+function _onAdvFilterChange(){
+  const checked=['O','F','M',''].filter(a=>{const el=document.getElementById('af-'+(a));return el&&el.checked;});
+  _writeAdvFilterCookie(checked);
+  _applyAdvFilter();
+}
+function _initAdvFilter(){
+  const saved=_readAdvFilterCookie();
+  if(saved&&saved.length>0&&saved.length<4){
+    saved.forEach(a=>{const el=document.getElementById('af-'+a);if(el)el.checked=true;});
+  }
+  _applyAdvFilter();
+}
+function _toggleAdvFilter(e){
+  e.stopPropagation();
+  const dd=document.getElementById('adv-filter-dropdown');
+  if(!dd) return;
+  const isOpen=dd.style.display!=='none';
+  dd.style.display=isOpen?'none':'block';
+  if(!isOpen){
+    const close=function(ev){if(!document.getElementById('adv-filter-btn').contains(ev.target)&&!dd.contains(ev.target)){dd.style.display='none';document.removeEventListener('click',close);}};
+    setTimeout(()=>document.addEventListener('click',close),0);
+  }
+}
+
 function render(){
   const app=document.getElementById('app');
   if(_state.view==='team') app.innerHTML=renderTeam();
   else if(_state.view==='client') app.innerHTML=renderClient();
   _syncThemeButtons();
+  if(_state.view==='team') _initAdvFilter();
   if(_state.projIdx!==null){
     setTimeout(()=>{
       const el=document.querySelector('.focused');
