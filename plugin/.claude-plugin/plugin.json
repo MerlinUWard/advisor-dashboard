@@ -1,0 +1,15 @@
+{
+  "name": "advisor-dashboard-cv",
+  "version": "1.0.0",
+  "description": "Intelligent client/project dashboard for Cardone Ventures advisory team. Auto-populated from Gong transcripts, stored in Supabase, MOI from Google Sheets.",
+  "author": {
+    "name": "Cardone Ventures"
+  },
+  "keywords": [
+    "dashboard",
+    "clients",
+    "advisors",
+    "gong",
+    "crm"
+  ]
+}

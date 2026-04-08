@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Disciplined — Dashboard</title>
+<style>
+/* ── THEME TOKENS ─────────────────────────────────────────────────────────── */
+:root{
+  --bg:#F8FAFC;--surface:#FFFFFF;--surface-2:#F8FAFC;--surface-3:#F1F5F9;
+  --border:#E2E8F0;--border-light:#F1F5F9;
+  --text-1:#0F172A;--text-2:#64748B;--text-3:#94A3B8;
+  --muted-bg:#FAFAFA;--today-bg:#FFFBEB;--today-amber:#B45309;
+  --shadow-sm:0 2px 8px rgba(15,23,42,.06);
+  --shadow-md:0 4px 16px rgba(15,23,42,.1);
+  --shadow-lg:0 20px 60px rgba(15,23,42,.2);
+}
+[data-theme="dark"]{
+  --bg:#0D0F1F;--surface:#161829;--surface-2:#1D2038;--surface-3:#252849;
+  --border:#2D3260;--border-light:#1D2038;
+  --text-1:#EEF0FF;--text-2:#9198C8;--text-3:#525880;
+  --muted-bg:#161829;--today-bg:#1F1600;--today-amber:#F59E0B;
+  --shadow-sm:0 2px 14px rgba(0,0,0,.5);
+  --shadow-md:0 4px 24px rgba(0,0,0,.6);
+  --shadow-lg:0 20px 64px rgba(0,0,0,.75);
+  /* jewel accent overrides */
+  --jewel-ops:#3B4FD8;--jewel-fin:#0F7A5A;--jewel-mkt:#6D28D9;
+}
+/* ── BASE ─────────────────────────────────────────────────────────────────── */
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text-1);min-height:100vh;transition:background .25s,color .2s;}
+.rainbow{height:4px;width:100%;background:linear-gradient(90deg,#6366F1 0%,#8B5CF6 15%,#EC4899 30%,#F59E0B 50%,#10B981 70%,#3B82F6 85%,#6366F1 100%);position:fixed;top:0;left:0;right:0;z-index:200;}
+.wrap{max-width:1280px;margin:0 auto;padding:28px 32px 60px;}
+h1{font-size:28px;font-weight:800;color:var(--text-1);}
+.sub{font-size:14px;color:var(--text-3);margin-top:4px;}
+.sec-label{font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;box-shadow:var(--shadow-sm);}
+.divider{height:1px;background:var(--border-light);margin:14px 0;}
+/* ── BADGES ───────────────────────────────────────────────────────────────── */
+.badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:9999px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;}
+.badge-ops{background:#DBEAFE;color:#1D4ED8;}
+.badge-fin{background:#D1FAE5;color:#065F46;}
+.badge-mkt{background:#EDE9FE;color:#5B21B6;}
+.badge-pos{background:#D1FAE5;color:#065F46;}
+.badge-neu{background:#DBEAFE;color:#1D4ED8;}
+.badge-cau{background:#FEF3C7;color:#92400E;}
+.badge-neg{background:#FEE2E2;color:#991B1B;}
+.badge-nodata{background:var(--surface-3);color:var(--text-2);}
+/* ── BUTTONS ──────────────────────────────────────────────────────────────── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:opacity .15s;}
+.btn:hover{opacity:.85;}
+.btn-primary{background:#3B82F6;color:#fff;}
+.btn-ghost{background:transparent;color:var(--text-2);border:1px solid var(--border);}
+.btn-danger{background:#FEE2E2;color:#991B1B;}
+.btn-sm{padding:5px 10px;font-size:12px;border-radius:8px;}
+/* ── FORMS ────────────────────────────────────────────────────────────────── */
+input,textarea,select{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:10px;font-size:14px;font-family:inherit;outline:none;background:var(--surface-2);color:var(--text-1);transition:border-color .15s;}
+input:focus,textarea:focus,select:focus{border-color:#3B82F6;}
+label{font-size:13px;font-weight:600;color:var(--text-1);display:block;margin-bottom:6px;}
+.form-group{margin-bottom:16px;}
+/* ── MODAL ────────────────────────────────────────────────────────────────── */
+.modal-bg{position:fixed;inset:0;background:rgba(5,7,20,.55);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px;}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:28px;width:100%;max-width:480px;box-shadow:var(--shadow-lg);color:var(--text-1);}
+.modal-title{font-size:18px;font-weight:800;margin-bottom:20px;color:var(--text-1);}
+.modal-footer{display:flex;justify-content:flex-end;gap:10px;margin-top:20px;}
+.hidden{display:none!important;}
+/* ── NAV ──────────────────────────────────────────────────────────────────── */
+.nav{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.nav-back{display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;font-weight:600;color:var(--text-2);border:none;background:none;padding:6px 10px;border-radius:8px;}
+.nav-back:hover{background:var(--surface-3);color:var(--text-1);}
+/* ── DARK TOGGLE ──────────────────────────────────────────────────────────── */
+.theme-toggle{background:var(--surface-2);border:1px solid var(--border);color:var(--text-1);border-radius:10px;padding:7px 12px;font-size:16px;cursor:pointer;transition:background .2s,border-color .2s;line-height:1;display:flex;align-items:center;gap:6px;}
+.theme-toggle:hover{background:var(--surface-3);}
+.theme-toggle-label{font-size:12px;font-weight:600;color:var(--text-2);}
+/* ── TEAM VIEW ────────────────────────────────────────────────────────────── */
+.moi-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px 20px;}
+.moi-row{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-radius:10px;background:var(--muted-bg);border:1px solid var(--border-light);cursor:pointer;transition:background .15s;}
+.moi-row:hover{background:var(--surface-3);}
+.moi-col{display:flex;flex-direction:column;gap:6px;}
+.today-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
+.advisor-header{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+.avatar{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;}
+.upcoming-table{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:var(--shadow-sm);}
+.upcoming-header{display:grid;grid-template-columns:90px 160px 180px 1fr;padding:10px 20px;background:var(--surface-2);border-bottom:1px solid var(--border);}
+.upcoming-row{display:grid;grid-template-columns:90px 160px 180px 1fr;padding:11px 20px;border-bottom:1px solid var(--border-light);cursor:pointer;transition:background .1s;}
+.upcoming-row:last-child{border-bottom:none;}
+.upcoming-row:hover{background:var(--surface-2);}
+.upcoming-row.today-row{background:var(--today-bg);}
+.client-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;}
+.client-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;box-shadow:var(--shadow-sm);cursor:pointer;transition:box-shadow .15s,transform .1s,border-color .2s;}
+.client-card:hover{box-shadow:var(--shadow-md);transform:translateY(-1px);}
+.client-card.urgent{border-color:#FCD34D;}
+[data-theme="dark"] .client-card.urgent{border-color:#92610A;}
+/* dark jewel badges */
+[data-theme="dark"] .badge-ops{background:#1E2B6A;color:#7B8FFF;}
+[data-theme="dark"] .badge-fin{background:#0B3B2A;color:#34D399;}
+[data-theme="dark"] .badge-mkt{background:#2D1B5E;color:#C084FC;}
+[data-theme="dark"] .badge-pos{background:#0B3B2A;color:#34D399;}
+[data-theme="dark"] .badge-neu{background:#1E2B6A;color:#7B8FFF;}
+[data-theme="dark"] .badge-cau{background:#3A2400;color:#FCD34D;}
+[data-theme="dark"] .badge-neg{background:#3B0D0D;color:#F87171;}
+/* ── CLIENT VIEW ──────────────────────────────────────────────────────────── */
+.client-hero{margin-bottom:32px;}
+.proj-list{display:flex;flex-direction:column;gap:12px;}
+.proj-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:var(--shadow-sm);}
+.proj-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;cursor:pointer;user-select:none;transition:background .1s;}
+.proj-header:hover{background:var(--muted-bg);}
+.proj-header-left{display:flex;align-items:center;gap:10px;flex:1;min-width:0;}
+.proj-name{font-size:15px;font-weight:700;color:var(--text-1);}
+.proj-expand-icon{font-size:16px;transition:transform .2s;flex-shrink:0;color:var(--text-3);}
+.proj-body{border-top:1px solid var(--border-light);padding:0 18px 14px;}
+.task-list{margin-top:10px;display:flex;flex-direction:column;gap:4px;}
+.task-row{display:flex;align-items:flex-start;gap:10px;padding:8px 10px;border-radius:8px;transition:background .1s;}
+.task-row:hover{background:var(--surface-2);}
+.task-cb{width:16px;height:16px;border-radius:4px;border:2px solid var(--border);flex-shrink:0;margin-top:2px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s,border-color .15s;}
+.task-cb.done{background:#10B981;border-color:#10B981;color:#fff;}
+.task-title{font-size:13px;color:var(--text-1);flex:1;line-height:1.4;}
+.task-title.done{text-decoration:line-through;color:var(--text-3);}
+.task-due{font-size:11px;font-weight:600;padding:2px 7px;border-radius:6px;flex-shrink:0;}
+.task-due.overdue{background:#FEE2E2;color:#991B1B;}
+.task-due.today{background:#FEF3C7;color:#92400E;}
+.task-due.upcoming{background:#DBEAFE;color:#1D4ED8;}
+.task-due.future{background:var(--surface-3);color:var(--text-2);}
+.task-actions{display:flex;gap:4px;flex-shrink:0;}
+.icon-btn{background:none;border:none;cursor:pointer;padding:4px;border-radius:6px;font-size:14px;color:var(--text-3);transition:color .15s,background .15s;}
+.icon-btn:hover{color:var(--text-1);background:var(--surface-3);}
+.empty-state{text-align:center;padding:20px;color:var(--text-3);font-size:13px;}
+/* ── INLINE STYLE DARK OVERRIDES ──────────────────────────────────────────── */
+/* Covers dynamically injected style attributes from JS template strings */
+[data-theme="dark"] [style*="color:#0F172A"]{color:var(--text-1)!important;}
+[data-theme="dark"] [style*="color:#64748B"]{color:var(--text-2)!important;}
+[data-theme="dark"] [style*="color:#94A3B8"]{color:var(--text-3)!important;}
+[data-theme="dark"] [style*="color:#374151"]{color:var(--text-1)!important;}
+[data-theme="dark"] [style*="background:#fff"],[data-theme="dark"] [style*="background:#FFFFFF"]{background:var(--surface)!important;}
+[data-theme="dark"] [style*="background:#F8FAFC"]{background:var(--surface-2)!important;}
+[data-theme="dark"] [style*="background:#FAFAFA"]{background:var(--muted-bg)!important;}
+[data-theme="dark"] [style*="background:#F1F5F9"]{background:var(--surface-3)!important;}
+[data-theme="dark"] [style*="border:1px solid #E2E8F0"]{border-color:var(--border)!important;}
+[data-theme="dark"] [style*="border-bottom:1px solid #E2E8F0"]{border-bottom-color:var(--border)!important;}
+[data-theme="dark"] [style*="border-bottom:1px solid #F1F5F9"]{border-bottom-color:var(--border-light)!important;}
+[data-theme="dark"] [style*="border-top:1px solid #F1F5F9"]{border-top-color:var(--border-light)!important;}
+[data-theme="dark"] [style*="color:#B45309"]{color:var(--today-amber)!important;}
+[data-theme="dark"] [style*="background:#FFFBEB"]{background:var(--today-bg)!important;}
+[data-theme="dark"] p[style*="color"]{color:var(--text-2)!important;}
+</style>
+</head>
+<body>
+<div class="rainbow"></div>
+<div id="app" style="padding-top:4px;"></div>
+
+<!-- Modal container -->
+<div id="modal" class="modal-bg hidden"></div>
+
+<script>
+// ─── ID GENERATOR (declared first so it's available during data init) ────────
+var _nextId = 1000;
+function tid(){ return 't'+(++_nextId); }
+
+// ─── DATA ────────────────────────────────────────────────────────────────────
+// MOI: 1=Negative, 2=Cautious, 3=Neutral, 4-6=Positive
+// adv: O=Ops, F=Finance, M=Marketing, -=unassigned
+
+let CLIENTS = [
+{slug:"applewood-landscaping",name:"Applewood Landscaping",moi:{score:1},projects:[
+  {name:"Operational Improvements",status:"active",adv:"O",tasks:[
+    {id:tid(),title:"Follow up on action items from most recent SBU call",due_date:null,completed:false,adv:"O"},
+    {id:tid(),title:"Test",due_date:"2026-04-10",completed:false,adv:"M"}
+  ]}
+]},
+{slug:"bakker-construction",name:"Bakker Construction",moi:{score:6},projects:[
+  {name:"Compensation & Incentive Plan",status:"active",adv:"-",tasks:[]},
+  {name:"Contract Structure: Cost-Plus vs Fixed-Price A/B Test",status:"active",adv:"-",tasks:[
+    {id:tid(),title:"Run A/B test of cost-plus vs fixed-price contracts across next 5 projects",due_date:null,completed:false,adv:"O"},
+    {id:tid(),title:"Analyze margin and client satisfaction results from contract type comparison",due_date:null,completed:false,adv:"O"}
+  ]},
+  {name:"Financial Risk Planning (Austerity Plan)",status:"active",adv:"-",tasks:[]},
+  {name:"End-of-Week Recap Process",status:"active",adv:"-",tasks:[]},
+  {name:"Production SOPs",status:"active",adv:"-",tasks:[
+    {id:tid(),title:"Document and finalize production SOPs for field operations",due_date:null,completed:false,adv:"O"}
+  ]},
+  {name:"Austerity Plan / Financial Resilience",status:"active",adv:"-",tasks:[
+    {id:tid(),title:"Complete 'life raft drill' — identify minimum viable cost structure for survival scenario",due_date:null,completed:false,adv:"O"}
+  ]},
+  {name:"Survey Feedback Process",status:"active",adv:"-",tasks:[]}
+]},
+{slug:"cart-barn",name:"Cart Barn",moi:{score:2},projects:[
+  {name:"Service Manager Hire & Service Department",status:"active",adv:"-",tasks:[
+    {id:tid(),title:"Finalize service manager hire process",due_date:"2026-04-07",completed:false,adv:"O"},
+    {id:tid(),title:"Address employee Mike performance issue with documentation",due_date:"2026-04-03",completed:false,adv:"O"}
+  ]},
+  {name:"Warranty & Service Package Development",status:"active",adv:"-",tasks:[
+    {id:tid(),title:"Build warranty/service package pricing model for Denago carts",due_date:"2026-04-07",completed:false,adv:"O"},
+    {id:tid(),title:"Get accurate cost data and realistic take-up rates from Debby",due_date:null,completed:false,adv:"O"},
+    {id:tid(),title:"Evaluate options for Club Car and Easy Go packages",due_date:null,completed:false,adv:"O"},
+    {id:tid(),title:"Finalize and launch warranty package offering",due_date:null,completed:false,adv:"O"}
+  ]},
+  {name:"Website Redesign",status:"active",adv:"-",tasks:[
+    {id:tid(),title:"Finalize homepage design changes — featured inventory and service sections",due_date:"2026-04-03",completed:false,adv:"O"},
+    {id:tid(),title:"Schedule weekly website review meetings with Debby and Mark",due_date:null,completed:false,adv:"O"}
+  ]},
+  {name:"New Hire Onboarding & SOPs",status:"active",adv:"-",tasks:[
+    {id:tid(),title:"Create service department SOPs for new hire onboarding",due_date:null,completed:false,adv:"O"},
+    {id:tid(),title:"Complete Bookable service workflow setup",due_date:null,completed:false,adv:"O"}
+  ]},
+  {name:"Employee Performance Management",status:"active",adv:"-",tasks:[
+    {id:tid(),title:"Document performance issues and close out Mike (problem employee) case",due_date:null,completed:false,adv:"O"},
+    {id:tid(),title:"Post and hire new Service Manager to backfill gap from termination",due_date:null,completed:false,adv:"O"}
+  ]}
+]},
+{slug:"creciendo-en-conciencia-sc",name:"Creciendo en Conciencia",moi:{score:4},projects:[
+  {name:"Clariconexion Event & Mastermind Program",status:"active",adv:"-",tasks:[
+    {id:tid(),title:"Finalize ticket sales plan for Clariconexion event",due_date:"2026-04-05",completed:false,adv:"O"},
+    {id:tid(),title:"Develop mastermind program structure and pricing",due_date:null,completed:false,adv:"O"},
+    {id:tid(),title:"Plan and execute Cloud Connection event for upcoming quarter",due_date:null,completed:false,adv:"O"}
+  ]},
+  {name:"OKRs & Multi-Location Financial Performance",status:"active",adv:"-",tasks:[
+    {id:tid(),title:"Adjust OKRs and resume weekly meetings to address action items",due_date:"2026-04-07",completed:false,adv:"O"}
+  ]},
+  {name:"Sales Team Performance",status:"active",adv:"-",tasks:[
+    {id:tid(),title:"Set specific monthly sales targets for Natalie with accountability check-ins",due_date:null,completed:false,adv:"O"},
+    {id:tid(),title:"Set specific monthly sales targets for Norma with accountability check-ins",due_date:null,completed:false,adv:"O"}
+  ]},
+  {name:"Mastermind Program Launch",status:"active",adv:"-",tasks:[
+    {id:tid(),title:"Finalize mastermind program launch plan and execute first cohort enrollment",due_date:null,completed:false,adv:"O"}
+  ]}
+]},
+{slug:"egan-landscape-group-inc",name:"Egan Landscape Group",moi:{score:6},projects:[
+  {name:"Acquisition Integration & Employee Communication",status:"active",adv:"-",tasks:[
+    {id:tid(),title:"Complete employee communication plan for acquisition integration",due_date:"2026-04-07",completed:false,adv:"O"},
+    {id:tid(),title:"Define sales processes post-acquisition",due_date:null,completed:false,adv:"O"},
+    {id:tid(),title:"Address hiring needs for integrated operations",due_date:null,completed:false,adv:"O"}
+  ]},
+  {name:"Incentive Plan & KPI Tracker",status:"active",adv:"-",tasks:[
+    {id:tid(),title:"Finalize KPI metrics with George for incentive calculator",due_date:"2026-04-03",completed:false,adv:"O"},
+    {id:tid(),title:"Build out incentive calculator and share template with Katie",due_date:"2026-04-10",completed:false,adv:"O"}
+  ]},
+  {name:"Briggs Landscape Acquisition Integration",status:"active",adv:"-",tasks:[
+    {id:tid(),title:"Port Briggs phone number to CallRail and configure call routing",due_date:null,completed:false,adv:"O"},
+    {id:tid(),title:"Add Justin, Abby, and Emily as admins to Briggs Facebook page",due_date:null,completed:false,adv:"O"},
+    {id:tid(),title:"Redirect Briggs website to Egan Landscape Group website",due_date:null,completed:false,adv:"O"},
+    {id:tid(),title:"Onboard Meredith to HubSpot for lead routing and intake form setup",due_date:null,completed:false,adv:"O"},
+    {id:tid(),title:"Complete week-by-week integration tasks for Briggs team and systems",due_date:null,completed:false,adv:"O"},
+    {id:tid(),title:"Set 30/60/90-day integration milestones for Briggs team and systems",due_date:null,completed:false,adv:"O"}
+  ]},
+  {name:"Employee Maturity Model Implementation",status:"active",adv:"-",tasks:[
+    {id:tid(),title:"Deploy Employee Maturity Model across integrated workforce including Briggs team",due_date:null,completed:false,adv:"O"}
+  ]},
+  {name:"Google Workspace Migration",status:"active",adv:"-",tasks:[
+    {id:tid(),title:"Complete Google Workspace migration for Egan and Briggs combined team",due_date:null,completed:false,adv:"M"}
+  ]}
+]},
+{slug:"gf-srl",name:"GF SRL",moi:{score:3},projects:[
+  {name:"Sales Hiring Process & Team Development",status:"active",adv:"-",tasks:[]},
+  {name:"Facebook Ads & Marketing",status:"active",adv:"-",tasks:[
+    {id:tid(),title:"Launch targeted Facebook ads campaign for lead generation",due_date:null,completed:false,adv:"M"}
+  ]},
+  {name:"Process Tracker Development",status:"active",adv:"-",tasks:[
+    {id:tid(),title:"Build project plan for process tracker (MLP concept)",due_date:"2026-04-14",completed:false,adv:"O"}
+  ]},
+  {name:"Financial Recovery & Debt Resolution",status:"active",adv:"-",tasks:[]},
+  {name:"Hiring Program",status:"active",adv:"-",tasks:[
+    {id:tid(),title:"Structure hiring process with clear role definitions and interview scorecards",due_date:null,completed:false,adv:"O"}
+  ]},
+  {name:"MLP (Minimum Loveable Product) Development",status:"active",adv:"-",tasks:[
+    {id:tid(),title:"Define MLP scope and success criteria for initial product/service offering",due_date:null,completed:false,adv:"O"}
+  ]},
+  {name:"Monica Project Ownership Initiative",status:"active",adv:"-",tasks:[
+    {id:tid(),title:"Transfer ownership of key projects to Monica with accountability structure",due_date:null,completed:false,adv:"O"}
+  ]}
+]},
+{slug:"mis-amigos-spanish-immersion-llc",name:"Mis Amigos Spanish Immersion",moi:{score:5},projects:[
+  {name:"Enrollment Growth Strategy",status:"active",adv:"-",tasks:[]},
+  {name:"Greg Incentive Plan & Project Completion",status:"active",adv:"-",tasks:[]},
+  {name:"E-Verify Compliance",status:"active",adv:"-",tasks:[]},
+  {name:"Expansion Planning",status:"active",adv:"-",tasks:[]}
+]},
+{slug:"my-favorite-pool-guy",name:"My Favorite Pool Guy",moi:{score:5},projects:[
+  {name:"Skimmer / QuickBooks Integration",status:"active",adv:"-",tasks:[
+    {id:tid(),title:"Resolve Skimmer to QuickBooks integration sync error",due_date:null,completed:false,adv:"O"}
+  ]},
+  {name:"Operations SOPs (Vehicle & Door Hangers)",status:"active",adv:"-",tasks:[
+    {id:tid(),title:"Create vehicle use and maintenance SOP",due_date:null,completed:false,adv:"O"},
+    {id:tid(),title:"Launch door hanger marketing program in service areas",due_date:null,completed:false,adv:"O"}
+  ]},
+  {name:"Financial Recovery (January Dip)",status:"active",adv:"-",tasks:[
+    {id:tid(),title:"Analyze January revenue dip — identify causes and develop recovery plan",due_date:null,completed:false,adv:"O"}
+  ]}
+]},
+{slug:"npg-associates-inc",name:"NPG Associates Inc",moi:{score:2},projects:[
+  {name:"AI De-Duping & Quality Check Tool",status:"active",adv:"-",tasks:[]},
+  {name:"Call Quality Grading & Script Optimization",status:"active",adv:"-",tasks:[]},
+  {name:"Multi-State Expansion (TX/FL/LA/GA)",status:"active",adv:"-",tasks:[
+    {id:tid(),title:"Research Texas contractor licensing requirements",due_date:null,completed:false,adv:"O"},
+    {id:tid(),title:"Identify target markets and entry strategy for FL, LA, GA",due_date:null,completed:false,adv:"O"}
+  ]},
+  {name:"Compliance Tool Implementation",status:"active",adv:"-",tasks:[
+    {id:tid(),title:"Evaluate and implement compliance management tool for multi-state operations",due_date:null,completed:false,adv:"O"}
+  ]},
+  {name:"Financial Systems & Reporting",status:"active",adv:"-",tasks:[]}
+]},
+{slug:"pacific-power-solutions",name:"Pacific Power Solutions",moi:{score:3},projects:[
+  {name:"New Hire Onboarding Plan (Trainiel)",status:"active",adv:"-",tasks:[]},
+  {name:"Daily Tech Metrics Tracker",status:"active",adv:"-",tasks:[]},
+  {name:"All-Team Meeting Restructure",status:"active",adv:"-",tasks:[]},
+  {name:"Sherwillow KPI Platform Implementation",status:"active",adv:"-",tasks:[
+    {id:tid(),title:"Complete KPI dashboard setup in Sherwillow platform",due_date:null,completed:false,adv:"O"},
+    {id:tid(),title:"Onboard field team to Sherwillow daily metrics entry",due_date:null,completed:false,adv:"O"}
+  ]},
+  {name:"Field Service Lightning Implementation",status:"active",adv:"-",tasks:[
+    {id:tid(),title:"Configure Field Service Lightning for field operations scheduling and dispatch",due_date:null,completed:false,adv:"O"},
+    {id:tid(),title:"Train field technicians on FSL mobile app",due_date:null,completed:false,adv:"O"}
+  ]},
+  {name:"Bill.com AP Integration",status:"active",adv:"-",tasks:[
+    {id:tid(),title:"Complete Bill.com integration with accounting system for AP automation",due_date:null,completed:false,adv:"O"}
+  ]},
+  {name:"Reporting Automation",status:"active",adv:"-",tasks:[
+    {id:tid(),title:"Automate weekly performance reports for field ops and finance",due_date:null,completed:false,adv:"O"}
+  ]}
+]},
+{slug:"philip-edward-contracting",name:"Philip Edward Contracting",moi:{score:2},projects:[
+  {name:"Financial Reporting & Scorecard",status:"active",adv:"-",tasks:[]},
+  {name:"Sales Process & Lead Follow-Up Improvement",status:"active",adv:"-",tasks:[]},
+  {name:"HubSpot CRM Implementation",status:"active",adv:"-",tasks:[
+    {id:tid(),title:"Define core CRM workflows in HubSpot for estimating and follow-up",due_date:null,completed:false,adv:"O"},
+    {id:tid(),title:"Train team on HubSpot usage and pipeline management",due_date:null,completed:false,adv:"O"}
+  ]},
+  {name:"Call Handling Hire",status:"active",adv:"-",tasks:[
+    {id:tid(),title:"Post job listing for dedicated call handler / admin support role",due_date:null,completed:false,adv:"O"}
+  ]},
+  {name:"Financial Management & Line of Credit",status:"active",adv:"-",tasks:[
+    {id:tid(),title:"Research and present line of credit options to address cash flow gaps",due_date:null,completed:false,adv:"O"},
+    {id:tid(),title:"Investigate unauthorized insurance withdrawal; document and resolve with provider",due_date:null,completed:false,adv:"O"}
+  ]}
+]},
+{slug:"rodeo-rigs",name:"Rodeo Rigs",moi:{score:6},projects:[
+  {name:"Gas Station Acquisition",status:"active",adv:"-",tasks:[]},
+  {name:"Financial Data Accuracy & Reporting",status:"active",adv:"-",tasks:[]},
+  {name:"CRM & Trade-In Calculator Implementation",status:"active",adv:"-",tasks:[
+    {id:tid(),title:"Configure CRM for equipment sales pipeline and follow-up tracking",due_date:null,completed:false,adv:"O"},
+    {id:tid(),title:"Build trade-in value calculator tool for sales process",due_date:null,completed:false,adv:"O"}
+  ]},
+  {name:"OKR Framework Implementation",status:"active",adv:"-",tasks:[
+    {id:tid(),title:"Set Q2 OKRs and implement weekly OKR review cadence",due_date:null,completed:false,adv:"O"}
+  ]},
+  {name:"Key Man Insurance",status:"active",adv:"-",tasks:[
+    {id:tid(),title:"Research and secure key man insurance policy for owner and key employee",due_date:null,completed:false,adv:"O"}
+  ]},
+  {name:"New Shop Tech Hiring",status:"active",adv:"-",tasks:[
+    {id:tid(),title:"Post and hire new shop technician to support growing equipment service volume",due_date:null,completed:false,adv:"O"}
+  ]}
+]},
+{slug:"selective-remodeling",name:"Selective Remodeling",moi:{score:5},projects:[
+  {name:"SBU Onboarding & Integration",status:"active",adv:"-",tasks:[]},
+  {name:"Commission Structure & Compensation",status:"active",adv:"-",tasks:[]},
+  {name:"Organizational Structure Design",status:"active",adv:"-",tasks:[
+    {id:tid(),title:"Create formal organizational chart with clear reporting lines and role responsibilities",due_date:null,completed:false,adv:"O"},
+    {id:tid(),title:"Build task delegation worksheet mapping all owner tasks to appropriate direct reports",due_date:null,completed:false,adv:"O"}
+  ]},
+  {name:"Google Drive Migration",status:"active",adv:"-",tasks:[
+    {id:tid(),title:"Complete company-wide migration to Google Drive for document management",due_date:null,completed:false,adv:"O"}
+  ]},
+  {name:"Shadowing & Leadership Development Plan",status:"active",adv:"-",tasks:[
+    {id:tid(),title:"Implement structured shadowing plan for owner to key managers to build operational independence",due_date:null,completed:false,adv:"O"}
+  ]}
+]},
+{slug:"wildridge-lawn-and-landscape",name:"Wildridge Lawn & Landscape",moi:{score:3},projects:[
+  {name:"OneDrive Resource Library Organization",status:"active",adv:"O",tasks:[
+    {id:tid(),title:"Finalize resource template structure with Rehanna and Krista in OneDrive",due_date:null,completed:false,adv:"O"},
+    {id:tid(),title:"Identify and document key stakeholders for all assets",due_date:null,completed:false,adv:"O"},
+    {id:tid(),title:"Complete OneDrive folder structure reorganization for improved team collaboration",due_date:null,completed:false,adv:"O"}
+  ]},
+  {name:"Daily Team Meeting Metrics System",status:"active",adv:"O",tasks:[
+    {id:tid(),title:"Evan to provide spreadsheet for tracking departmental metrics and data sources",due_date:null,completed:false,adv:"O"},
+    {id:tid(),title:"Define individual contributions to departmental goals for each team member",due_date:null,completed:false,adv:"O"}
+  ]},
+  {name:"Selling System Standardization",status:"active",adv:"-",tasks:[
+    {id:tid(),title:"Document and standardize end-to-end selling system across all sales reps",due_date:null,completed:false,adv:"O"}
+  ]},
+  {name:"Director of Biz Ops Onboarding (Hanna)",status:"active",adv:"-",tasks:[
+    {id:tid(),title:"Complete Hanna onboarding and integration into leadership team",due_date:null,completed:false,adv:"O"}
+  ]},
+  {name:"Sales Conversion Optimization",status:"active",adv:"-",tasks:[
+    {id:tid(),title:"Identify top 3 conversion bottlenecks and implement targeted fixes",due_date:null,completed:false,adv:"O"}
+  ]}
+]},
+{slug:"yellowstone-post-frame",name:"Yellowstone Post Frame",moi:{score:3},projects:[
+  {name:"Client Financing Assistance Process",status:"active",adv:"-",tasks:[
+    {id:tid(),title:"Create client financing info/checklist for barndo financing",due_date:null,completed:false,adv:"O"}
+  ]},
+  {name:"Sales Conversion & Pipeline",status:"active",adv:"-",tasks:[
+    {id:tid(),title:"Close pending contract by April 1 deadline",due_date:"2026-04-01",completed:false,adv:"O"},
+    {id:tid(),title:"Explore referral program and contractor partnerships",due_date:null,completed:false,adv:"O"},
+    {id:tid(),title:"Define and document structured sales process to improve lead-to-close ratio",due_date:null,completed:false,adv:"O"},
+    {id:tid(),title:"Develop and train team on value-based sales script",due_date:null,completed:false,adv:"O"}
+  ]},
+  {name:"Value-Add Sales Promotion",status:"active",adv:"-",tasks:[
+    {id:tid(),title:"Design and launch value-add promotional offer to increase deal size and close rate",due_date:null,completed:false,adv:"O"}
+  ]},
+  {name:"Inventory Tracker",status:"active",adv:"-",tasks:[
+    {id:tid(),title:"Build materials inventory tracking system",due_date:null,completed:false,adv:"O"}
+  ]},
+  {name:"DIY Plan Sales",status:"active",adv:"-",tasks:[
+    {id:tid(),title:"Develop DIY plan package offering and pricing strategy",due_date:null,completed:false,adv:"O"}
+  ]}
+]}
+];
+
+// Add IDs to projects
+CLIENTS.forEach(c => {
+  c.projects.forEach((p,pi) => { p.id = p.id || (c.slug+'-p'+pi); });
+});
+
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
+// (tid already declared at top of script)
+
+function moiBadge(score){
+  if(score===null||score===undefined) return '<span class="badge badge-nodata">No Data</span>';
+  if(score>=4) return `<span class="badge badge-pos">Positive · ${score}</span>`;
+  if(score===3) return `<span class="badge badge-neu">Neutral · ${score}</span>`;
+  if(score===2) return `<span class="badge badge-cau">Cautious · ${score}</span>`;
+  return `<span class="badge badge-neg">Negative · ${score}</span>`;
+}
+
+function advBadge(adv){
+  if(adv==='O') return '<span class="badge badge-ops" style="font-size:10px;padding:2px 8px;">OPS</span>';
+  if(adv==='F') return '<span class="badge badge-fin" style="font-size:10px;padding:2px 8px;">FIN</span>';
+  if(adv==='M') return '<span class="badge badge-mkt" style="font-size:10px;padding:2px 8px;">MKTG</span>';
+  return '';
+}
+
+const TODAY = '2026-04-01';
+const IN7 = '2026-04-08';
+
+function dueBadge(d){
+  if(!d) return '';
+  if(d<TODAY) return `<span class="task-due overdue">Overdue</span>`;
+  if(d===TODAY) return `<span class="task-due today">Today ⚡</span>`;
+  if(d<=IN7) return `<span class="task-due upcoming">${fmtDate(d)}</span>`;
+  return `<span class="task-due future">${fmtDate(d)}</span>`;
+}
+
+function fmtDate(d){
+  if(!d) return '';
+  const [y,m,day] = d.split('-');
+  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return `${months[+m-1]} ${+day}`;
+}
+
+function getClient(slug){ return CLIENTS.find(c=>c.slug===slug); }
+
+function upcomingTasks(){
+  const rows = [];
+  CLIENTS.forEach(c => {
+    c.projects.forEach((p,pi) => {
+      p.tasks.filter(t=>!t.completed&&t.due_date&&t.due_date<=IN7).forEach(t=>{
+        rows.push({clientName:c.name,clientSlug:c.slug,projIdx:pi,projName:p.name,taskTitle:t.title,due:t.due_date});
+      });
+    });
+  });
+  rows.sort((a,b)=>a.due<b.due?-1:1);
+  return rows;
+}
+
+function clientNextDue(c){
+  let best=null,task=null;
+  c.projects.forEach(p=>{
+    p.tasks.filter(t=>!t.completed&&t.due_date).forEach(t=>{
+      if(!best||t.due_date<best){best=t.due_date;task=t.title;}
+    });
+  });
+  return {date:best,task};
+}
+
+// ─── ROUTER ──────────────────────────────────────────────────────────────────
+let _state = {view:'team', clientSlug:null, projIdx:null, expandedProjs:new Set()};
+
+function toggleTheme(){
+  const h = document.documentElement;
+  const isDark = h.getAttribute('data-theme') === 'dark';
+  h.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  _syncThemeButtons();
+}
+function _syncThemeButtons(){
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  document.querySelectorAll('#theme-icon').forEach(el => el.textContent = isDark ? '☀️' : '🌙');
+  document.querySelectorAll('#theme-label').forEach(el => el.textContent = isDark ? 'Light' : 'Dark');
+}
+
+function navigate(view, clientSlug=null, projIdx=null){
+  _state.view=view;
+  _state.clientSlug=clientSlug;
+  _state.projIdx=projIdx;
+  render();
+  window.scrollTo(0,0);
+}
+
+// ─── TEAM VIEW ────────────────────────────────────────────────────────────────
+function renderTeam(){
+  const upcoming = upcomingTasks();
+  const moi = {};
+  CLIENTS.forEach(c => { if(c.moi) moi[c.name]=c.moi.score; });
+
+  // Split 15 clients into 3 cols of 5
+  const col1 = CLIENTS.slice(0,5);
+  const col2 = CLIENTS.slice(5,10);
+  const col3 = CLIENTS.slice(10,15);
+
+  function moiRow(c){
+    return `<div class="moi-row" onclick="navigate('client','${c.slug}')">
+      <span style="font-size:13px;font-weight:500;">${esc(c.name)}</span>
+      ${moiBadge(c.moi?c.moi.score:null)}
+    </div>`;
+  }
+
+  function upcomingRow(r){
+    const isToday=r.due===TODAY;
+    return `<div class="upcoming-row${isToday?' today-row':''}" onclick="navigate('client','${r.clientSlug}',${r.projIdx})">
+      <span style="font-size:13px;font-weight:${isToday?'700':'400'};color:${isToday?'#B45309':'#94A3B8'};">${fmtDate(r.due)}${isToday?' ⚡':''}</span>
+      <span style="font-size:13px;font-weight:500;">${esc(r.clientName)}</span>
+      <span style="font-size:13px;color:#64748B;">${esc(r.projName.length>22?r.projName.substring(0,22)+'…':r.projName)}</span>
+      <span style="font-size:13px;">${esc(r.taskTitle.length>60?r.taskTitle.substring(0,60)+'…':r.taskTitle)}</span>
+    </div>`;
+  }
+
+  function clientCard(c){
+    const nd = clientNextDue(c);
+    const pendingTasks = c.projects.reduce((s,p)=>s+p.tasks.filter(t=>!t.completed).length,0);
+    const isUrgent = nd.date===TODAY;
+    return `<div class="client-card${isUrgent?' urgent':''}" onclick="navigate('client','${c.slug}')">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+        <span style="font-size:15px;font-weight:700;flex:1;padding-right:8px;">${esc(c.name)}</span>
+        ${moiBadge(c.moi?c.moi.score:null)}
+      </div>
+      <div style="font-size:13px;color:#64748B;margin-bottom:3px;">${c.projects.filter(p=>p.status==='active').length} active project${c.projects.length!==1?'s':''} · ${pendingTasks} open task${pendingTasks!==1?'s':''}</div>
+      <div style="font-size:13px;color:${isUrgent?'#B45309':'#64748B'};margin-bottom:14px;font-weight:${isUrgent?'600':'400'};">
+        ${nd.date ? `${isUrgent?'⚡ Due today':'Next: '+fmtDate(nd.date)} — ${nd.task.length>40?nd.task.substring(0,40)+'…':nd.task}` : 'No upcoming due dates'}
+      </div>
+      <div class="divider"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div>${[...new Set(c.projects.map(p=>p.adv).filter(a=>a&&a!=='-'))].map(advBadge).join('')}</div>
+        <span style="font-size:13px;font-weight:600;color:#3B82F6;">Open →</span>
+      </div>
+    </div>`;
+  }
+
+  return `
+  <div class="wrap">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:36px;padding-top:20px;">
+      <div>
+        <h1>Good afternoon, Merlin</h1>
+        <p class="sub">Wednesday, April 1, 2026 &nbsp;·&nbsp; Disciplined</p>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:10px;">
+        <button class="theme-toggle" onclick="toggleTheme()"><span id="theme-icon">🌙</span><span class="theme-toggle-label" id="theme-label">Dark</span></button>
+        <div style="text-align:right;font-size:12px;color:var(--text-3);line-height:1.8;">
+          <div>Gong synced: Apr 1, 2026</div>
+          <div>MOI synced: Mar 30, 2026</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-bottom:36px;">
+      <div class="sec-label">CLIENT SENTIMENT (MOI)</div>
+      <div class="moi-grid">
+        <div class="moi-col">${col1.map(moiRow).join('')}</div>
+        <div class="moi-col">${col2.map(moiRow).join('')}</div>
+        <div class="moi-col">${col3.map(moiRow).join('')}</div>
+      </div>
+    </div>
+
+    <div style="margin-bottom:36px;">
+      <div class="sec-label">UPCOMING — NEXT 7 DAYS (${upcoming.length} tasks)</div>
+      ${upcoming.length===0
+        ? `<div class="card" style="text-align:center;color:#94A3B8;padding:32px;">🎉 No tasks due in the next 7 days</div>`
+        : `<div class="upcoming-table">
+            <div class="upcoming-header">
+              <span style="font-size:11px;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:.05em;">Due</span>
+              <span style="font-size:11px;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:.05em;">Client</span>
+              <span style="font-size:11px;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:.05em;">Project</span>
+              <span style="font-size:11px;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:.05em;">Task</span>
+            </div>
+            ${upcoming.map(upcomingRow).join('')}
+          </div>`
+      }
+    </div>
+
+    <div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <div class="sec-label" style="margin-bottom:0;">ACTIVE CLIENTS (${CLIENTS.length})</div>
+      </div>
+      <div class="client-grid">${CLIENTS.map(clientCard).join('')}</div>
+    </div>
+  </div>`;
+}
+
+// ─── CLIENT VIEW ─────────────────────────────────────────────────────────────
+function renderClient(){
+  const c = getClient(_state.clientSlug);
+  if(!c) return '<div class="wrap"><p>Client not found.</p></div>';
+  const focusProjIdx = _state.projIdx;
+
+  if(focusProjIdx!==null && !_state.expandedProjs.has(focusProjIdx)){
+    _state.expandedProjs.add(focusProjIdx);
+  }
+
+  const pendingTasks = c.projects.reduce((s,p)=>s+p.tasks.filter(t=>!t.completed).length,0);
+  const completedTasks = c.projects.reduce((s,p)=>s+p.tasks.filter(t=>t.completed).length,0);
+
+  function renderProject(p, pi){
+    const isExpanded = _state.expandedProjs.has(pi);
+    const pendingCount = p.tasks.filter(t=>!t.completed).length;
+    const isFocused = pi===focusProjIdx;
+
+    function renderTask(t, ti){
+      return `<div class="task-row" id="task-${t.id}">
+        <div class="task-cb${t.completed?' done':''}" onclick="toggleTask('${c.slug}',${pi},${ti})">${t.completed?'✓':''}</div>
+        <span class="task-title${t.completed?' done':''}">${esc(t.title)}</span>
+        ${advBadge(t.adv||p.adv)}
+        ${dueBadge(t.due_date)}
+        <div class="task-actions">
+          <button class="icon-btn" title="Edit task" onclick="editTask('${c.slug}',${pi},${ti})">✏️</button>
+          <button class="icon-btn" title="Delete task" onclick="deleteTask('${c.slug}',${pi},${ti})">🗑️</button>
+        </div>
+      </div>`;
+    }
+
+    return `<div class="proj-card${isFocused?' focused':''}">
+      <div class="proj-header" onclick="toggleProj(${pi})" style="border-left:3px solid ${isFocused?'#3B82F6':'transparent'};">
+        <div class="proj-header-left">
+          <span class="proj-expand-icon" style="transform:rotate(${isExpanded?'90':'0'}deg);">▶</span>
+          <span class="proj-name">${esc(p.name)}</span>
+          ${advBadge(p.adv)}
+          ${pendingCount>0?`<span style="font-size:11px;background:#F1F5F9;color:#64748B;padding:2px 8px;border-radius:9999px;">${pendingCount} open</span>`:''}
+        </div>
+        <div style="display:flex;gap:8px;flex-shrink:0;" onclick="event.stopPropagation()">
+          <button class="btn btn-ghost btn-sm" onclick="editProject('${c.slug}',${pi})">Edit</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteProject('${c.slug}',${pi})">Delete</button>
+        </div>
+      </div>
+      ${isExpanded?`
+      <div class="proj-body">
+        <div class="task-list">${p.tasks.length>0?p.tasks.map((t,ti)=>renderTask(t,ti)).join(''):'<div class="empty-state">No tasks yet.</div>'}</div>
+        <div style="margin-top:12px;">
+          <button class="btn btn-primary btn-sm" onclick="addTask('${c.slug}',${pi})">＋ Add Task</button>
+        </div>
+      </div>`:''}
+    </div>`;
+  }
+
+  return `
+  <div class="wrap">
+    <div class="nav" style="justify-content:space-between;">
+      <button class="nav-back" onclick="navigate('team')">← Team Dashboard</button>
+      <button class="theme-toggle" onclick="toggleTheme()"><span id="theme-icon">🌙</span><span class="theme-toggle-label" id="theme-label">Dark</span></button>
+    </div>
+
+    <div class="client-hero">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;">
+        <div>
+          <h1>${esc(c.name)}</h1>
+          <div style="display:flex;align-items:center;gap:10px;margin-top:8px;">
+            ${moiBadge(c.moi?c.moi.score:null)}
+            <span style="font-size:13px;color:#64748B;">${c.projects.length} projects · ${pendingTasks} open tasks · ${completedTasks} done</span>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;">
+          <button class="btn btn-primary" onclick="addProject('${c.slug}')">＋ Add Project</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="proj-list">
+      ${c.projects.length>0?c.projects.map((p,pi)=>renderProject(p,pi)).join(''):'<div class="card empty-state">No projects yet. Add one above.</div>'}
+    </div>
+  </div>`;
+}
+
+// ─── MAIN RENDER ─────────────────────────────────────────────────────────────
+function render(){
+  const app = document.getElementById('app');
+  if(_state.view==='team') app.innerHTML = renderTeam();
+  else if(_state.view==='client') app.innerHTML = renderClient();
+
+  // Sync theme toggle button labels after re-render
+  _syncThemeButtons();
+
+  // Scroll focused project into view
+  if(_state.projIdx!==null){
+    setTimeout(()=>{
+      const el = document.querySelector('.focused');
+      if(el) el.scrollIntoView({behavior:'smooth',block:'start'});
+    },100);
+  }
+}
+
+// ─── INTERACTIONS ─────────────────────────────────────────────────────────────
+function toggleProj(pi){
+  if(_state.expandedProjs.has(pi)) _state.expandedProjs.delete(pi);
+  else _state.expandedProjs.add(pi);
+  render();
+}
+
+function toggleTask(slug,pi,ti){
+  const c=getClient(slug);
+  const t=c.projects[pi].tasks[ti];
+  t.completed=!t.completed;
+  render();
+}
+
+// ─── MODAL HELPERS ───────────────────────────────────────────────────────────
+function showModal(html){
+  const m=document.getElementById('modal');
+  m.classList.remove('hidden');
+  m.innerHTML=html;
+}
+function closeModal(){
+  document.getElementById('modal').classList.add('hidden');
+}
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// ─── ADD PROJECT ─────────────────────────────────────────────────────────────
+function addProject(slug){
+  showModal(`<div class="modal">
+    <div class="modal-title">Add Project</div>
+    <div class="form-group"><label>Project Name</label><input id="pn" placeholder="e.g. HubSpot CRM Implementation" /></div>
+    <div class="form-group"><label>Advisor</label>
+      <select id="pa">
+        <option value="-">Unassigned</option>
+        <option value="O">Ops — Merlin Ward</option>
+        <option value="F">Finance — Mike Jensen</option>
+        <option value="M">Marketing — Justin Cook</option>
+      </select>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveAddProject('${slug}')">Add Project</button>
+    </div>
+  </div>`);
+  setTimeout(()=>document.getElementById('pn').focus(),50);
+}
+function saveAddProject(slug){
+  const name=document.getElementById('pn').value.trim();
+  const adv=document.getElementById('pa').value;
+  if(!name) return alert('Please enter a project name.');
+  const c=getClient(slug);
+  const pi=c.projects.length;
+  c.projects.push({id:slug+'-p'+pi,name,status:'active',adv,tasks:[]});
+  _state.expandedProjs.add(pi);
+  closeModal();
+  render();
+}
+
+// ─── EDIT PROJECT ────────────────────────────────────────────────────────────
+function editProject(slug,pi){
+  const p=getClient(slug).projects[pi];
+  showModal(`<div class="modal">
+    <div class="modal-title">Edit Project</div>
+    <div class="form-group"><label>Project Name</label><input id="pn" value="${esc(p.name)}" /></div>
+    <div class="form-group"><label>Advisor</label>
+      <select id="pa">
+        <option value="-" ${p.adv==='-'?'selected':''}>Unassigned</option>
+        <option value="O" ${p.adv==='O'?'selected':''}>Ops — Merlin Ward</option>
+        <option value="F" ${p.adv==='F'?'selected':''}>Finance — Mike Jensen</option>
+        <option value="M" ${p.adv==='M'?'selected':''}>Marketing — Justin Cook</option>
+      </select>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEditProject('${slug}',${pi})">Save</button>
+    </div>
+  </div>`);
+}
+function saveEditProject(slug,pi){
+  const name=document.getElementById('pn').value.trim();
+  const adv=document.getElementById('pa').value;
+  if(!name) return alert('Please enter a project name.');
+  const p=getClient(slug).projects[pi];
+  p.name=name; p.adv=adv;
+  closeModal(); render();
+}
+
+// ─── DELETE PROJECT ──────────────────────────────────────────────────────────
+function deleteProject(slug,pi){
+  const p=getClient(slug).projects[pi];
+  showModal(`<div class="modal">
+    <div class="modal-title">Delete Project</div>
+    <p style="font-size:14px;color:#64748B;margin-bottom:8px;">Delete <strong>${esc(p.name)}</strong> and all its tasks?</p>
+    <p style="font-size:13px;color:#94A3B8;">This cannot be undone.</p>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-danger" onclick="confirmDeleteProject('${slug}',${pi})">Delete</button>
+    </div>
+  </div>`);
+}
+function confirmDeleteProject(slug,pi){
+  const c=getClient(slug);
+  c.projects.splice(pi,1);
+  _state.expandedProjs.clear();
+  _state.projIdx=null;
+  closeModal(); render();
+}
+
+// ─── ADD TASK ────────────────────────────────────────────────────────────────
+function addTask(slug,pi){
+  const proj=getClient(slug).projects[pi];
+  const a=proj.adv||'-';
+  showModal(`<div class="modal">
+    <div class="modal-title">Add Task</div>
+    <div class="form-group"><label>Task Title</label><textarea id="tt" rows="2" placeholder="Describe the task…"></textarea></div>
+    <div class="form-group"><label>Due Date (optional)</label><input id="td" type="date" /></div>
+    <div class="form-group"><label>Advisor</label><select id="ta">
+      <option value="-" ${a==='-'?'selected':''}>Unassigned</option>
+      <option value="O" ${a==='O'?'selected':''}>Ops — Merlin Ward</option>
+      <option value="F" ${a==='F'?'selected':''}>Finance — Mike Jensen</option>
+      <option value="M" ${a==='M'?'selected':''}>Marketing — Justin Cook</option>
+    </select></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveAddTask('${slug}',${pi})">Add Task</button>
+    </div>
+  </div>`);
+  setTimeout(()=>document.getElementById('tt').focus(),50);
+}
+function saveAddTask(slug,pi){
+  const title=document.getElementById('tt').value.trim();
+  const due=document.getElementById('td').value||null;
+  const adv=document.getElementById('ta').value||'-';
+  if(!title) return alert('Please enter a task title.');
+  getClient(slug).projects[pi].tasks.push({id:tid(),title,due_date:due,completed:false,adv});
+  closeModal(); render();
+}
+
+// ─── EDIT TASK ───────────────────────────────────────────────────────────────
+function editTask(slug,pi,ti){
+  const t=getClient(slug).projects[pi].tasks[ti];
+  const proj=getClient(slug).projects[pi];
+  const a=t.adv||proj.adv||'-';
+  showModal(`<div class="modal">
+    <div class="modal-title">Edit Task</div>
+    <div class="form-group"><label>Task Title</label><textarea id="tt" rows="2">${esc(t.title)}</textarea></div>
+    <div class="form-group"><label>Due Date (optional)</label><input id="td" type="date" value="${t.due_date||''}" /></div>
+    <div class="form-group"><label>Advisor</label><select id="ta">
+      <option value="-" ${a==='-'?'selected':''}>Unassigned</option>
+      <option value="O" ${a==='O'?'selected':''}>Ops — Merlin Ward</option>
+      <option value="F" ${a==='F'?'selected':''}>Finance — Mike Jensen</option>
+      <option value="M" ${a==='M'?'selected':''}>Marketing — Justin Cook</option>
+    </select></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEditTask('${slug}',${pi},${ti})">Save</button>
+    </div>
+  </div>`);
+}
+function saveEditTask(slug,pi,ti){
+  const title=document.getElementById('tt').value.trim();
+  const due=document.getElementById('td').value||null;
+  const adv=document.getElementById('ta').value||'-';
+  if(!title) return alert('Please enter a task title.');
+  const t=getClient(slug).projects[pi].tasks[ti];
+  t.title=title; t.due_date=due; t.adv=adv;
+  closeModal(); render();
+}
+
+// ─── DELETE TASK ─────────────────────────────────────────────────────────────
+function deleteTask(slug,pi,ti){
+  const t=getClient(slug).projects[pi].tasks[ti];
+  showModal(`<div class="modal">
+    <div class="modal-title">Delete Task</div>
+    <p style="font-size:14px;color:#64748B;margin-bottom:8px;">Delete this task?</p>
+    <p style="font-size:13px;color:#0F172A;font-style:italic;margin-bottom:8px;">"${esc(t.title.length>80?t.title.substring(0,80)+'…':t.title)}"</p>
+    <p style="font-size:13px;color:#94A3B8;">This cannot be undone.</p>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-danger" onclick="confirmDeleteTask('${slug}',${pi},${ti})">Delete</button>
+    </div>
+  </div>`);
+}
+function confirmDeleteTask(slug,pi,ti){
+  getClient(slug).projects[pi].tasks.splice(ti,1);
+  closeModal(); render();
+}
+
+// Close modal on backdrop click
+document.getElementById('modal').addEventListener('click',function(e){
+  if(e.target===this) closeModal();
+});
+
+// ─── INIT ────────────────────────────────────────────────────────────────────
+CLIENTS.forEach(c=>{
+  c.projects.forEach((p,pi)=>{
+    p.id=p.id||(c.slug+'-p'+pi);
+    p.tasks.forEach(t=>{ if(!t.id) t.id=tid(); });
+  });
+});
+
+render();
+</script>
+</body>
+</html>
