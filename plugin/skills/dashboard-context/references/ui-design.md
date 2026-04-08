@@ -311,16 +311,17 @@ Placed at the **top of the client page**, above the Advisor Call Summaries secti
 
 ### SVG Chart Rendering
 
-Chart dimensions: width=100% (use viewBox), height=160px. Use `viewBox="0 0 400 160"` and `width="100%" height="160"`.
+Chart dimensions: width=100% (use viewBox), height=185px. Use `viewBox="0 0 400 185"` and `width="100%" height="185"`.
 
-Chart margins: top=10, right=10, bottom=30, left=36 (for y-axis labels).
-Plot area: x from 36 to 390, y from 10 to 130.
+Chart margins: top=10, right=10, bottom=20, left=36 (for y-axis labels).
+Plot area: x from 36 to 390, y from 10 to 155.
 
-**Y-axis:** Score range 1.0–6.0. Map score to y-pixel:
+**Y-axis:** Score range 0.0–6.0. Map score to y-pixel:
 ```
-y = 130 - ((score - 1.0) / 5.0) * 120
+y = 155 - (score / 6.0) * 145
 ```
-Draw gridlines (stroke: #F1F5F9, stroke-width: 1) and y-labels (12px, #94A3B8) at scores 2, 3, 4, 5.
+Draw gridlines (stroke: #F1F5F9, stroke-width: 1) and y-labels (10px, #94A3B8) at all integer scores 0, 1, 2, 3, 4, 5, 6.
+X-axis date labels at y=175.
 
 **X-axis:** Up to 12 weeks of call dates, spread evenly across plot width (36 to 390).
 If N data points: x_i = 36 + (i / (N-1)) * 354 (for N≥2). If N=1, center at x=213.
@@ -370,6 +371,23 @@ function hideTooltip() {
   document.querySelectorAll('#svg-tooltip').forEach(t => t.style.display = 'none');
 }
 ```
+
+### Last Call Summary Block
+
+Rendered inside each chart card, below the SVG (or empty state). Shows the most recent call's summary text, date, and sentiment. Use the last entry in the sorted call data array.
+
+```html
+<!-- Last call summary — appended inside chart card, below the SVG -->
+<div style="border-top:1px solid #F1F5F9;margin-top:12px;padding-top:10px;">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+    <span style="font-size:11px;color:#94A3B8;">Last call: [date in Mon D, YYYY format]</span>
+    <span style="[sentiment badge style for that call]">[SENTIMENT]</span>
+  </div>
+  <p style="font-size:12px;color:#64748B;line-height:1.5;margin:0;">[call.summary of most recent entry]</p>
+</div>
+```
+
+If no call data for this role, omit the last call summary block (empty state already communicates the absence).
 
 ### Empty State (no MOI data for that advisor role)
 
@@ -434,6 +452,8 @@ function showCallSummary(role, callDate) {
         <button onclick="closeCallSummary()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#94A3B8;padding:0 4px;line-height:1;">×</button>
       </div>
       <div style="padding:24px 28px;">
+        <p style="font-size:11px;font-weight:600;color:#94A3B8;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 8px;">Strategic Summary</p>
+        <p style="font-size:13px;color:#64748B;line-height:1.6;margin:0 0 24px;">${d.strategic_summary || ''}</p>
         <p style="font-size:11px;font-weight:600;color:#94A3B8;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 12px;">MOI Scorecard</p>
         <table style="width:100%;border-collapse:collapse;margin-bottom:24px;">
           <thead>
@@ -447,8 +467,6 @@ function showCallSummary(role, callDate) {
         </table>
         <p style="font-size:11px;font-weight:600;color:#94A3B8;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 12px;">Reflection Questions</p>
         <div style="margin-bottom:24px;">${reflections}</div>
-        <p style="font-size:11px;font-weight:600;color:#94A3B8;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 8px;">Strategic Summary</p>
-        <p style="font-size:13px;color:#64748B;line-height:1.6;margin:0 0 24px;">${d.strategic_summary || ''}</p>
         <p style="font-size:11px;font-weight:600;color:#94A3B8;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 10px;">Core Values Demonstrated</p>
         <div>${coreValues}</div>
       </div>
