@@ -66,6 +66,14 @@ label{font-size:13px;font-weight:600;color:var(--text-1);display:block;margin-bo
 .modal{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:28px;width:100%;max-width:480px;box-shadow:var(--shadow-lg);color:var(--text-1);}
 .modal-title{font-size:18px;font-weight:800;margin-bottom:20px;color:var(--text-1);}
 .modal-footer{display:flex;justify-content:flex-end;gap:10px;margin-top:20px;}
+.toast{position:fixed;top:20px;right:20px;z-index:9999;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;color:#fff;box-shadow:0 4px 16px rgba(0,0,0,.2);opacity:0;transition:opacity .25s;pointer-events:none;}
+.toast.show{opacity:1;}
+.toast-ok{background:#059669;}
+.toast-err{background:#DC2626;}
+.toast-warn{background:#D97706;}
+.btn.saving{opacity:.6;pointer-events:none;}
+.btn.saving::after{content:'';display:inline-block;width:12px;height:12px;border:2px solid #fff;border-top-color:transparent;border-radius:50%;margin-left:8px;vertical-align:middle;animation:spin .5s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
 .hidden{display:none!important;}
 /* ── NAV ──────────────────────────────────────────────────────────────────── */
 .nav{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
@@ -181,6 +189,7 @@ label{font-size:13px;font-weight:600;color:var(--text-1);display:block;margin-bo
 
 <!-- Modal container -->
 <div id="modal" class="modal-bg hidden"></div>
+<div id="toast" class="toast"></div>
 <!-- Call summary modal container -->
 <div id="call-modal-container" class="hidden"></div>
 <!-- Chart tooltip -->
@@ -736,15 +745,35 @@ function toggleProj(pi){
 
 async function toggleTask(slug,pi,ti){
   const t=getClient(slug).projects[pi].tasks[ti];
-  t.completed=!t.completed;
-  render(); // optimistic
-  await sb.from('tasks').update({completed:t.completed}).eq('id',t.id);
+  const next=!t.completed;
+  const {error}=await sb.from('tasks').update({completed:next}).eq('id',t.id);
+  if(error){ toast('Failed to update task','err'); return; }
+  t.completed=next;
+  render();
 }
 
 // ─── MODAL HELPERS ───────────────────────────────────────────────────────────
-function showModal(html){ const m=document.getElementById('modal');m.classList.remove('hidden');m.innerHTML=html; }
-function closeModal(){ document.getElementById('modal').classList.add('hidden'); }
+let _modalOpen = false;
+function showModal(html){ _modalOpen=true; const m=document.getElementById('modal');m.classList.remove('hidden');m.innerHTML=html; }
+function closeModal(){ _modalOpen=false; document.getElementById('modal').classList.add('hidden'); }
 function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// ─── TOAST & SAVE HELPERS ────────────────────────────────────────────────────
+let _toastTimer=null;
+function toast(msg,type='ok'){
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.className='toast toast-'+type+' show';
+  clearTimeout(_toastTimer);
+  _toastTimer=setTimeout(()=>el.classList.remove('show'), type==='err'?5000:2500);
+}
+function setBtnSaving(label){
+  const btns=document.querySelectorAll('.modal-footer .btn-primary, .modal-footer .btn-danger');
+  btns.forEach(b=>{b.classList.add('saving'); b.textContent=label||'Saving';});
+}
+function clearBtnSaving(){
+  const btns=document.querySelectorAll('.modal-footer .btn-primary, .modal-footer .btn-danger');
+  btns.forEach(b=>b.classList.remove('saving'));
+}
 
 // ─── ADD PROJECT ─────────────────────────────────────────────────────────────
 function addProject(slug){
@@ -770,13 +799,16 @@ async function saveAddProject(slug){
   const name=document.getElementById('pn').value.trim();
   const adv=document.getElementById('pa').value||null;
   if(!name) return alert('Please enter a project name.');
+  setBtnSaving('Adding…');
   const c=getClient(slug);
-  const newProj={id:pid(),name,status:'active',adv,tasks:[]};
+  const newId=pid();
   const pi=c.projects.length;
-  c.projects.push(newProj); // optimistic
+  const {error}=await sb.from('projects').insert({id:newId,client_id:slug,name,status:'active',adv,sort_order:pi});
+  if(error){ clearBtnSaving(); toast('Failed to add project: '+error.message,'err'); return; }
+  c.projects.push({id:newId,name,status:'active',adv,tasks:[]});
   _state.expandedProjs.add(pi);
   closeModal(); render();
-  await sb.from('projects').insert({id:newProj.id,client_id:slug,name,status:'active',adv,sort_order:pi});
+  toast('Project added');
 }
 
 // ─── EDIT PROJECT ────────────────────────────────────────────────────────────
@@ -803,10 +835,13 @@ async function saveEditProject(slug,pi){
   const name=document.getElementById('pn').value.trim();
   const adv=document.getElementById('pa').value||null;
   if(!name) return alert('Please enter a project name.');
+  setBtnSaving();
   const p=getClient(slug).projects[pi];
+  const {error}=await sb.from('projects').update({name,adv}).eq('id',p.id);
+  if(error){ clearBtnSaving(); toast('Failed to save project: '+error.message,'err'); return; }
   p.name=name; p.adv=adv;
   closeModal(); render();
-  await sb.from('projects').update({name,adv}).eq('id',p.id);
+  toast('Project saved');
 }
 
 // ─── DELETE PROJECT ──────────────────────────────────────────────────────────
@@ -823,12 +858,15 @@ function deleteProject(slug,pi){
   </div>`);
 }
 async function confirmDeleteProject(slug,pi){
+  setBtnSaving('Deleting…');
   const c=getClient(slug);
   const p=c.projects[pi];
+  const {error}=await sb.from('projects').delete().eq('id',p.id);
+  if(error){ clearBtnSaving(); toast('Failed to delete project: '+error.message,'err'); return; }
   c.projects.splice(pi,1);
   _state.expandedProjs.clear(); _state.projIdx=null;
   closeModal(); render();
-  await sb.from('projects').delete().eq('id',p.id); // cascade deletes tasks
+  toast('Project deleted');
 }
 
 // ─── ADD TASK ────────────────────────────────────────────────────────────────
@@ -857,11 +895,14 @@ async function saveAddTask(slug,pi){
   const due=document.getElementById('td').value||null;
   const adv=document.getElementById('ta').value||null;
   if(!title) return alert('Please enter a task title.');
+  setBtnSaving('Adding…');
   const proj=getClient(slug).projects[pi];
-  const newTask={id:tid(),title,due_date:due,completed:false,adv};
-  proj.tasks.push(newTask); // optimistic
+  const newId=tid();
+  const {error}=await sb.from('tasks').insert({id:newId,project_id:proj.id,title,due_date:due,completed:false,adv,sort_order:proj.tasks.length});
+  if(error){ clearBtnSaving(); toast('Failed to add task: '+error.message,'err'); return; }
+  proj.tasks.push({id:newId,title,due_date:due,completed:false,adv});
   closeModal(); render();
-  await sb.from('tasks').insert({id:newTask.id,project_id:proj.id,title,due_date:due,completed:false,adv,sort_order:proj.tasks.length-1});
+  toast('Task added');
 }
 
 // ─── EDIT TASK ───────────────────────────────────────────────────────────────
@@ -890,10 +931,13 @@ async function saveEditTask(slug,pi,ti){
   const due=document.getElementById('td').value||null;
   const adv=document.getElementById('ta').value||null;
   if(!title) return alert('Please enter a task title.');
+  setBtnSaving();
   const t=getClient(slug).projects[pi].tasks[ti];
+  const {error}=await sb.from('tasks').update({title,due_date:due,adv}).eq('id',t.id);
+  if(error){ clearBtnSaving(); toast('Failed to save task: '+error.message,'err'); return; }
   t.title=title; t.due_date=due; t.adv=adv;
   closeModal(); render();
-  await sb.from('tasks').update({title,due_date:due,adv}).eq('id',t.id);
+  toast('Task saved');
 }
 
 // ─── DELETE TASK ─────────────────────────────────────────────────────────────
@@ -911,20 +955,30 @@ function deleteTask(slug,pi,ti){
   </div>`);
 }
 async function confirmDeleteTask(slug,pi,ti){
+  setBtnSaving('Deleting…');
   const t=getClient(slug).projects[pi].tasks[ti];
+  const {error}=await sb.from('tasks').delete().eq('id',t.id);
+  if(error){ clearBtnSaving(); toast('Failed to delete task: '+error.message,'err'); return; }
   getClient(slug).projects[pi].tasks.splice(ti,1);
   closeModal(); render();
-  await sb.from('tasks').delete().eq('id',t.id);
+  toast('Task deleted');
 }
 
 // Close modal on backdrop click
 document.getElementById('modal').addEventListener('click',function(e){ if(e.target===this) closeModal(); });
 
 // ─── REAL-TIME SUBSCRIPTION ──────────────────────────────────────────────────
+function onRealtimeChange(){
+  if(_modalOpen){
+    toast('Data updated by another user — close and re-open your edit','warn');
+  } else {
+    loadData();
+  }
+}
 sb.channel('dashboard-live')
-  .on('postgres_changes',{event:'*',schema:'public',table:'tasks'},    ()=>loadData())
-  .on('postgres_changes',{event:'*',schema:'public',table:'projects'}, ()=>loadData())
-  .on('postgres_changes',{event:'*',schema:'public',table:'clients'},  ()=>loadData())
+  .on('postgres_changes',{event:'*',schema:'public',table:'tasks'},    ()=>onRealtimeChange())
+  .on('postgres_changes',{event:'*',schema:'public',table:'projects'}, ()=>onRealtimeChange())
+  .on('postgres_changes',{event:'*',schema:'public',table:'clients'},  ()=>onRealtimeChange())
   .subscribe();
 
 // ─── INIT ────────────────────────────────────────────────────────────────────
