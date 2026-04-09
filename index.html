@@ -209,7 +209,7 @@ async function loadData(){
     sb.from('clients').select('*').order('name'),
     sb.from('projects').select('*').order('sort_order'),
     sb.from('tasks').select('*').order('sort_order'),
-    sb.from('sync_log').select('*').order('synced_at',{ascending:false}).limit(10),
+    sb.from('sync_state').select('last_gong_sync,last_moi_sync').eq('id','singleton').single(),
     sb.from('advisor_call_summaries').select('*').order('call_date',{ascending:true}),
   ]);
 
@@ -248,9 +248,9 @@ async function loadData(){
       }))
   }));
 
-  const syncs = sRes.data || [];
-  _syncMeta.gong  = syncs.find(s=>s.source==='gong')?.synced_at  || null;
-  _syncMeta.drive = syncs.find(s=>s.source==='drive')?.synced_at || null;
+  const syncRow = sRes.data || {};
+  _syncMeta.gong  = syncRow.last_gong_sync || null;
+  _syncMeta.drive = syncRow.last_moi_sync  || null;
 
   render();
 }
