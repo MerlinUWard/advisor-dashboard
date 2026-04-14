@@ -14,6 +14,12 @@
   --border:#E2E8F0;--border-light:#F1F5F9;
   --text-1:#0F172A;--text-2:#64748B;--text-3:#94A3B8;
   --muted-bg:#FAFAFA;--today-bg:#FFFBEB;--today-amber:#B45309;
+  --moi-remarkable-bg:#22C55E;--moi-remarkable-fg:#FFFFFF;
+  --moi-excellent-bg:#4ADE80;--moi-excellent-fg:#052E16;
+  --moi-great-bg:#A3E635;--moi-great-fg:#1A2E05;
+  --moi-good-bg:#FDE047;--moi-good-fg:#422006;
+  --moi-average-bg:#FDBA74;--moi-average-fg:#431407;
+  --moi-poor-bg:#F87171;--moi-poor-fg:#450A0A;
   --shadow-sm:0 2px 8px rgba(15,23,42,.06);
   --shadow-md:0 4px 16px rgba(15,23,42,.1);
   --shadow-lg:0 20px 60px rgba(15,23,42,.2);
@@ -23,6 +29,12 @@
   --border:#2D3260;--border-light:#1D2038;
   --text-1:#EEF0FF;--text-2:#9198C8;--text-3:#525880;
   --muted-bg:#161829;--today-bg:#1F1600;--today-amber:#F59E0B;
+  --moi-remarkable-bg:#16A34A;--moi-remarkable-fg:#BBF7D0;
+  --moi-excellent-bg:#22C55E;--moi-excellent-fg:#052E16;
+  --moi-great-bg:#65A30D;--moi-great-fg:#ECFCCB;
+  --moi-good-bg:#A16207;--moi-good-fg:#FEF9C3;
+  --moi-average-bg:#9A3412;--moi-average-fg:#FED7AA;
+  --moi-poor-bg:#B91C1C;--moi-poor-fg:#FEE2E2;
   --shadow-sm:0 2px 14px rgba(0,0,0,.5);
   --shadow-md:0 4px 24px rgba(0,0,0,.6);
   --shadow-lg:0 20px 64px rgba(0,0,0,.75);
@@ -48,6 +60,12 @@ h1{font-size:28px;font-weight:800;color:var(--text-1);}
 .badge-neu{background:#DBEAFE;color:#1D4ED8;}
 .badge-cau{background:#FEF3C7;color:#92400E;}
 .badge-neg{background:#FEE2E2;color:#991B1B;}
+.badge-moi-remarkable{background:var(--moi-remarkable-bg);color:var(--moi-remarkable-fg);}
+.badge-moi-excellent{background:var(--moi-excellent-bg);color:var(--moi-excellent-fg);}
+.badge-moi-great{background:var(--moi-great-bg);color:var(--moi-great-fg);}
+.badge-moi-good{background:var(--moi-good-bg);color:var(--moi-good-fg);}
+.badge-moi-average{background:var(--moi-average-bg);color:var(--moi-average-fg);}
+.badge-moi-poor{background:var(--moi-poor-bg);color:var(--moi-poor-fg);}
 .badge-nodata{background:var(--surface-3);color:var(--text-2);}
 /* ── BUTTONS ──────────────────────────────────────────────────────────────── */
 .btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:opacity .15s;}
@@ -272,12 +290,18 @@ function fmtSync(ts){
 }
 
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
+function moiTier(score){
+  if(score>=6) return {name:'Remarkable',cls:'badge-moi-remarkable'};
+  if(score>=5) return {name:'Excellent',cls:'badge-moi-excellent'};
+  if(score>=4) return {name:'Great',cls:'badge-moi-great'};
+  if(score>=3) return {name:'Good',cls:'badge-moi-good'};
+  if(score>=2) return {name:'Average',cls:'badge-moi-average'};
+  return {name:'Poor',cls:'badge-moi-poor'};
+}
 function moiBadge(score){
   if(score===null||score===undefined) return '<span class="badge badge-nodata">No Data</span>';
-  if(score>=4) return `<span class="badge badge-pos">Positive · ${score}</span>`;
-  if(score===3) return `<span class="badge badge-neu">Neutral · ${score}</span>`;
-  if(score===2) return `<span class="badge badge-cau">Cautious · ${score}</span>`;
-  return `<span class="badge badge-neg">Negative · ${score}</span>`;
+  const t=moiTier(score);
+  return `<span class="badge ${t.cls}">${t.name} · ${score}</span>`;
 }
 
 function advBadge(adv){
@@ -598,8 +622,7 @@ function renderCallCharts(c){
     const badge=role==='operations'?'badge-ops':role==='finance'?'badge-fin':'badge-mkt';
     const recent=entries.filter(e=>e.moi_score!=null).slice(-1)[0];
     const safeJson=JSON.stringify(entries).replace(/<\//g,'<\\/');
-    const sentimentBg=recent?.sentiment==='positive'?'#D1FAE5':recent?.sentiment==='neutral'?'#DBEAFE':recent?.sentiment==='cautious'?'#FEF3C7':'#FEE2E2';
-    const sentimentClr=recent?.sentiment==='positive'?'#065F46':recent?.sentiment==='neutral'?'#1E40AF':recent?.sentiment==='cautious'?'#92400E':'#991B1B';
+    const tier=recent?moiTier(recent.moi_score):{name:'',cls:''};
     return `<div class="chart-panel">`+
       `<div class="chart-panel-header">`+
         `<span class="chart-panel-title">${ROLE_LABEL[role]}</span>`+
@@ -609,7 +632,7 @@ function renderCallCharts(c){
       (recent?`<div style="border-top:1px solid var(--border);padding:8px 12px;">`+
         `<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">`+
           `<span style="font-size:11px;font-weight:600;color:var(--text-1);">${fmtDate(recent.call_date)}</span>`+
-          (recent.sentiment?`<span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:4px;background:${sentimentBg};color:${sentimentClr};text-transform:capitalize;">${recent.sentiment}</span>`:'')+
+          (tier.name?`<span class="badge ${tier.cls}" style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:4px;">${tier.name}</span>`:'')+
         `</div>`+
         (recent.summary?`<div style="font-size:12px;color:var(--text-3);line-height:1.5;">${esc(recent.summary)}</div>`:'')+
       `</div>`:'')+
