@@ -354,7 +354,7 @@ function navigate(view,clientSlug=null,projIdx=null){
 // ─── TEAM VIEW ────────────────────────────────────────────────────────────────
 function renderTeam(){
   const upcoming=upcomingTasks();
-  const col1=CLIENTS.slice(0,5),col2=CLIENTS.slice(5,10),col3=CLIENTS.slice(10,15);
+  const cs=Math.ceil(CLIENTS.length/3);const col1=CLIENTS.slice(0,cs),col2=CLIENTS.slice(cs,cs*2),col3=CLIENTS.slice(cs*2);
 
   function moiRow(c){
     return `<div class="moi-row" onclick="navigate('client','${c.slug}')">
