@@ -309,16 +309,19 @@ function fmtDate(d){
 function getClient(slug){ return CLIENTS.find(c=>c.slug===slug); }
 
 function upcomingTasks(){
-  const rows=[];
+  const dated=[],undated=[];
   CLIENTS.forEach(c=>{
     c.projects.forEach((p,pi)=>{
-      p.tasks.filter(t=>!t.completed&&t.due_date&&t.due_date.slice(0,10)<=IN7).forEach(t=>{
-        rows.push({clientName:c.name,clientSlug:c.slug,projIdx:pi,projName:p.name,taskTitle:t.title,due:t.due_date.slice(0,10),adv:t.adv||p.adv||''});
+      p.tasks.filter(t=>!t.completed).forEach(t=>{
+        const row={clientName:c.name,clientSlug:c.slug,projIdx:pi,projName:p.name,taskTitle:t.title,due:t.due_date?t.due_date.slice(0,10):null,adv:t.adv||p.adv||''};
+        if(row.due&&row.due<=IN7) dated.push(row);
+        else if(!row.due) undated.push(row);
       });
     });
   });
-  rows.sort((a,b)=>a.due<b.due?-1:1);
-  return rows;
+  dated.sort((a,b)=>a.due<b.due?-1:1);
+  undated.sort((a,b)=>a.clientName.localeCompare(b.clientName));
+  return dated.concat(undated);
 }
 
 function clientNextDue(c){
@@ -365,8 +368,9 @@ function renderTeam(){
 
   function upcomingRow(r){
     const isToday=r.due===TODAY;
-    return `<div class="upcoming-row${isToday?' today-row':''}" data-adv="${r.adv||''}" onclick="navigate('client','${r.clientSlug}',${r.projIdx})">
-      <span style="font-size:13px;font-weight:${isToday?'700':'400'};color:${isToday?'#B45309':'#94A3B8'};">${fmtDate(r.due)}${isToday?' ⚡':''}</span>
+    const noDate=!r.due;
+    return `<div class="upcoming-row${isToday?' today-row':''}" data-adv="${r.adv||''}" data-nodate="${noDate?'1':'0'}" onclick="navigate('client','${r.clientSlug}',${r.projIdx})">
+      <span style="font-size:13px;font-weight:${isToday?'700':'400'};color:${isToday?'#B45309':noDate?'#DC2626':'#94A3B8'};">${noDate?'<span style="font-size:10px;font-weight:700;color:#DC2626;">NO DATE</span>':fmtDate(r.due)}${isToday?' ⚡':''}</span>
       <span style="font-size:13px;font-weight:500;">${esc(r.clientName)}</span>
       <span style="font-size:13px;color:#64748B;">${esc(r.projName.length>22?r.projName.substring(0,22)+'…':r.projName)}</span>
       <span style="font-size:13px;display:flex;align-items:center;gap:6px;">${r.adv?advBadge(r.adv):''}${esc(r.taskTitle.length>55?r.taskTitle.substring(0,55)+'…':r.taskTitle)}</span>
@@ -446,6 +450,10 @@ function renderTeam(){
             </label>
             <label style="display:flex;align-items:center;gap:8px;padding:5px 0;font-size:13px;cursor:pointer;white-space:nowrap;">
               <input type="checkbox" id="af-" onchange="_onAdvFilterChange()" style="cursor:pointer;"> Unassigned
+            </label>
+            <div style="border-top:1px solid #E2E8F0;margin:4px 0;"></div>
+            <label style="display:flex;align-items:center;gap:8px;padding:5px 0;font-size:13px;cursor:pointer;white-space:nowrap;">
+              <input type="checkbox" id="af-nodate" onchange="_onAdvFilterChange()" style="cursor:pointer;"> <span style="font-size:10px;font-weight:700;color:#DC2626;">NO DATE</span>
             </label>
           </div>
         </div>
@@ -684,28 +692,42 @@ function _writeAdvFilterCookie(checked){
 function _applyAdvFilter(){
   const checkboxIds=['af-O','af-F','af-M','af-'];
   const checked=checkboxIds.map(id=>{const el=document.getElementById(id);return el&&el.checked?id.replace('af-',''):null;}).filter(v=>v!==null);
-  const allChecked=checked.length===0||checked.length===4;
+  const allAdvChecked=checked.length===0||checked.length===4;
+  const ndEl=document.getElementById('af-nodate');
+  const showNoDate=ndEl&&ndEl.checked;
   const rows=document.querySelectorAll('#upcoming-table .upcoming-row[data-adv]');
   let visible=0;
   rows.forEach(row=>{
     const adv=row.getAttribute('data-adv')||'';
-    const show=allChecked||checked.includes(adv);
+    const isNoDate=row.getAttribute('data-nodate')==='1';
+    let show;
+    if(isNoDate){
+      show=showNoDate&&(allAdvChecked||checked.includes(adv));
+    } else {
+      show=allAdvChecked||checked.includes(adv);
+    }
     row.style.display=show?'':'none';
     if(show) visible++;
   });
   const label=document.getElementById('upcoming-label');
-  if(label) label.textContent='UPCOMING — NEXT 7 DAYS ('+(allChecked?rows.length:visible)+' of '+rows.length+' tasks)';
+  if(label) label.textContent='UPCOMING — NEXT 7 DAYS ('+(allAdvChecked&&!showNoDate?rows.length:visible)+' of '+rows.length+' tasks)';
   const btnLabel=document.getElementById('adv-filter-label');
-  if(btnLabel) btnLabel.textContent=allChecked?'Advisor: All':'Advisor: '+checked.map(a=>a==='O'?'OPS':a==='F'?'FIN':a==='M'?'MKTG':'Unassigned').join(', ');
+  if(btnLabel) btnLabel.textContent=allAdvChecked?'Advisor: All':'Advisor: '+checked.map(a=>a==='O'?'OPS':a==='F'?'FIN':a==='M'?'MKTG':'Unassigned').join(', ');
 }
 function _onAdvFilterChange(){
   const checked=['O','F','M',''].filter(a=>{const el=document.getElementById('af-'+(a));return el&&el.checked;});
-  _writeAdvFilterCookie(checked);
+  const ndEl=document.getElementById('af-nodate');
+  _writeAdvFilterCookie({adv:checked,nodate:ndEl&&ndEl.checked});
   _applyAdvFilter();
 }
 function _initAdvFilter(){
   const saved=_readAdvFilterCookie();
-  if(saved&&saved.length>0&&saved.length<4){
+  if(saved&&typeof saved==='object'&&!Array.isArray(saved)){
+    if(saved.adv&&saved.adv.length>0&&saved.adv.length<4){
+      saved.adv.forEach(a=>{const el=document.getElementById('af-'+a);if(el)el.checked=true;});
+    }
+    if(saved.nodate){const el=document.getElementById('af-nodate');if(el)el.checked=true;}
+  } else if(Array.isArray(saved)&&saved.length>0&&saved.length<4){
     saved.forEach(a=>{const el=document.getElementById('af-'+a);if(el)el.checked=true;});
   }
   _applyAdvFilter();
