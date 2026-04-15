@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Disciplined — Dashboard</title>
+<title>Disciplined â Dashboard</title>
 <script>
 (function(){var m=document.cookie.match(/(?:^|;\s*)theme=([^;]+)/);if(m)document.documentElement.setAttribute('data-theme',m[1]);})();
 </script>
 <style>
-/* ── THEME TOKENS ─────────────────────────────────────────────────────────── */
+/* ââ THEME TOKENS âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
 :root{
   --bg:#F8FAFC;--surface:#FFFFFF;--surface-2:#F8FAFC;--surface-3:#F1F5F9;
   --border:#E2E8F0;--border-light:#F1F5F9;
@@ -41,7 +41,7 @@
   /* jewel accent overrides */
   --jewel-ops:#3B4FD8;--jewel-fin:#0F7A5A;--jewel-mkt:#6D28D9;
 }
-/* ── BASE ─────────────────────────────────────────────────────────────────── */
+/* ââ BASE âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text-1);min-height:100vh;transition:background .25s,color .2s;}
 .rainbow{height:4px;width:100%;background:linear-gradient(90deg,#6366F1 0%,#8B5CF6 15%,#EC4899 30%,#F59E0B 50%,#10B981 70%,#3B82F6 85%,#6366F1 100%);position:fixed;top:0;left:0;right:0;z-index:200;}
@@ -51,7 +51,7 @@ h1{font-size:28px;font-weight:800;color:var(--text-1);}
 .sec-label{font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px;}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;box-shadow:var(--shadow-sm);}
 .divider{height:1px;background:var(--border-light);margin:14px 0;}
-/* ── BADGES ───────────────────────────────────────────────────────────────── */
+/* ââ BADGES âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
 .badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:9999px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;}
 .badge-ops{background:#DBEAFE;color:#1D4ED8;}
 .badge-fin{background:#D1FAE5;color:#065F46;}
@@ -67,19 +67,19 @@ h1{font-size:28px;font-weight:800;color:var(--text-1);}
 .badge-moi-average{background:var(--moi-average-bg);color:var(--moi-average-fg);}
 .badge-moi-poor{background:var(--moi-poor-bg);color:var(--moi-poor-fg);}
 .badge-nodata{background:var(--surface-3);color:var(--text-2);}
-/* ── BUTTONS ──────────────────────────────────────────────────────────────── */
+/* ââ BUTTONS ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
 .btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:opacity .15s;}
 .btn:hover{opacity:.85;}
 .btn-primary{background:#3B82F6;color:#fff;}
 .btn-ghost{background:transparent;color:var(--text-2);border:1px solid var(--border);}
 .btn-danger{background:#FEE2E2;color:#991B1B;}
 .btn-sm{padding:5px 10px;font-size:12px;border-radius:8px;}
-/* ── FORMS ────────────────────────────────────────────────────────────────── */
+/* ââ FORMS ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
 input,textarea,select{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:10px;font-size:14px;font-family:inherit;outline:none;background:var(--surface-2);color:var(--text-1);transition:border-color .15s;}
 input:focus,textarea:focus,select:focus{border-color:#3B82F6;}
 label{font-size:13px;font-weight:600;color:var(--text-1);display:block;margin-bottom:6px;}
 .form-group{margin-bottom:16px;}
-/* ── MODAL ────────────────────────────────────────────────────────────────── */
+/* ââ MODAL ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
 .modal-bg{position:fixed;inset:0;background:rgba(5,7,20,.55);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px;}
 .modal{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:28px;width:100%;max-width:480px;box-shadow:var(--shadow-lg);color:var(--text-1);}
 .modal-title{font-size:18px;font-weight:800;margin-bottom:20px;color:var(--text-1);}
@@ -93,15 +93,15 @@ label{font-size:13px;font-weight:600;color:var(--text-1);display:block;margin-bo
 .btn.saving::after{content:'';display:inline-block;width:12px;height:12px;border:2px solid #fff;border-top-color:transparent;border-radius:50%;margin-left:8px;vertical-align:middle;animation:spin .5s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg);}}
 .hidden{display:none!important;}
-/* ── NAV ──────────────────────────────────────────────────────────────────── */
+/* ââ NAV ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
 .nav{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
 .nav-back{display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;font-weight:600;color:var(--text-2);border:none;background:none;padding:6px 10px;border-radius:8px;}
 .nav-back:hover{background:var(--surface-3);color:var(--text-1);}
-/* ── DARK TOGGLE ──────────────────────────────────────────────────────────── */
+/* ââ DARK TOGGLE ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
 .theme-toggle{background:var(--surface-2);border:1px solid var(--border);color:var(--text-1);border-radius:10px;padding:7px 12px;font-size:16px;cursor:pointer;transition:background .2s,border-color .2s;line-height:1;display:flex;align-items:center;gap:6px;}
 .theme-toggle:hover{background:var(--surface-3);}
 .theme-toggle-label{font-size:12px;font-weight:600;color:var(--text-2);}
-/* ── TEAM VIEW ────────────────────────────────────────────────────────────── */
+/* ââ TEAM VIEW ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
 .moi-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px 20px;}
 .moi-row{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-radius:10px;background:var(--muted-bg);border:1px solid var(--border-light);cursor:pointer;transition:background .15s;}
 .moi-row:hover{background:var(--surface-3);}
@@ -128,7 +128,7 @@ label{font-size:13px;font-weight:600;color:var(--text-1);display:block;margin-bo
 [data-theme="dark"] .badge-neu{background:#1E2B6A;color:#7B8FFF;}
 [data-theme="dark"] .badge-cau{background:#3A2400;color:#FCD34D;}
 [data-theme="dark"] .badge-neg{background:#3B0D0D;color:#F87171;}
-/* ── CLIENT VIEW ──────────────────────────────────────────────────────────── */
+/* ââ CLIENT VIEW ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
 .client-hero{margin-bottom:32px;}
 .proj-list{display:flex;flex-direction:column;gap:12px;}
 .proj-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:var(--shadow-sm);}
@@ -152,13 +152,13 @@ label{font-size:13px;font-weight:600;color:var(--text-1);display:block;margin-bo
 .task-due.future{background:var(--surface-3);color:var(--text-2);}
 .task-due.no-date{background:#FEE2E2;color:#991B1B;}
 .task-row.no-date-row{background:#FFF5F5;border-radius:8px;padding:6px 8px;margin:0 -8px;}
-/* ── MOI CHART PANELS */
+/* ââ MOI CHART PANELS */
 .chart-panel-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:32px;}
 .chart-panel{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px 20px 14px;box-shadow:var(--shadow-sm);}
 .chart-panel-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
 .chart-panel-title{font-size:13px;font-weight:700;color:var(--text-1);}
 .chart-empty{height:120px;display:flex;align-items:center;justify-content:center;background:var(--surface-2);border-radius:10px;color:var(--text-3);font-size:12px;text-align:center;line-height:1.6;padding:12px;}
-/* ── CALL SUMMARY MODAL */
+/* ââ CALL SUMMARY MODAL */
 .call-modal-bg{position:fixed;inset:0;background:rgba(15,23,42,.65);z-index:600;display:flex;align-items:center;justify-content:center;padding:24px;}
 .call-modal{background:var(--surface);border:1px solid var(--border);border-radius:20px;max-width:680px;width:100%;max-height:88vh;overflow-y:auto;box-shadow:var(--shadow-lg);}
 .call-modal-header{display:flex;align-items:center;justify-content:space-between;padding:18px 24px 14px;border-bottom:1px solid var(--border-light);}
@@ -171,16 +171,16 @@ label{font-size:13px;font-weight:600;color:var(--text-1);display:block;margin-bo
 .scorecard-rat{font-size:12px;color:var(--text-2);line-height:1.5;}
 .reflection-q{font-size:13px;font-weight:700;color:var(--text-1);margin-bottom:4px;}
 .reflection-a{font-size:13px;color:var(--text-2);line-height:1.5;margin-bottom:14px;}
-/* ── CHART TOOLTIP */
+/* ââ CHART TOOLTIP */
 #chart-tooltip{position:fixed;background:rgba(15,23,42,.88);color:#fff;font-size:11px;font-weight:600;padding:4px 9px;border-radius:6px;pointer-events:none;white-space:nowrap;z-index:700;display:none;}
-/* ── DARK OVERRIDES for new elements */
+/* ââ DARK OVERRIDES for new elements */
 [data-theme="dark"] .task-row.no-date-row{background:#2D1010;}
 [data-theme="dark"] .call-modal-bg{background:rgba(0,0,0,.75);}
 .task-actions{display:flex;gap:4px;flex-shrink:0;}
 .icon-btn{background:none;border:none;cursor:pointer;padding:4px;border-radius:6px;font-size:14px;color:var(--text-3);transition:color .15s,background .15s;}
 .icon-btn:hover{color:var(--text-1);background:var(--surface-3);}
 .empty-state{text-align:center;padding:20px;color:var(--text-3);font-size:13px;}
-/* ── INLINE STYLE DARK OVERRIDES ──────────────────────────────────────────── */
+/* ââ INLINE STYLE DARK OVERRIDES ââââââââââââââââââââââââââââââââââââââââââââ */
 /* Covers dynamically injected style attributes from JS template strings */
 [data-theme="dark"] [style*="color:#0F172A"]{color:var(--text-1)!important;}
 [data-theme="dark"] [style*="color:#64748B"]{color:var(--text-2)!important;}
@@ -214,23 +214,23 @@ label{font-size:13px;font-weight:600;color:var(--text-1);display:block;margin-bo
 <div id="chart-tooltip"></div>
 
 <script>
-// ─── SUPABASE CONFIG (replace placeholders after Supabase project is created) ──
+// âââ SUPABASE CONFIG (replace placeholders after Supabase project is created) ââ
 const SUPABASE_URL = 'https://tmszsjmscxdvtaeztaqh.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRtc3pzam1zY3hkdnRhZXp0YXFoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxODY3NTQsImV4cCI6MjA5MDc2Mjc1NH0.8Y1y4fZUVVIqm8fRYAN1t_MNbRaWFHXJgR3aDsyexaQ';
 const { createClient } = supabase;
 const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// ─── ID GENERATORS ────────────────────────────────────────────────────────────
+// âââ ID GENERATORS ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 var _nextId = 1000;
 function tid(){ return 't-'+(++_nextId)+'-'+Math.random().toString(36).slice(2,6); }
 function pid(){ return 'p-'+(++_nextId)+'-'+Math.random().toString(36).slice(2,6); }
 
-// ─── STATE ────────────────────────────────────────────────────────────────────
+// âââ STATE ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 let CLIENTS = [];
 let _syncMeta = { gong: null, drive: null };
-let _state = {view:'team', clientSlug:null, projIdx:null, expandedProjs:new Set(), projSort:'alpha-az', taskSort:'due'};
+let _state = {view:'team', clientSlug:null, projIdx:null, expandedProjs:new Set(), projSort:'alpha-az', taskSort:'due', advClientFilter:'all', showCompletedTasks:new Set()};
 
-// ─── DATA LOADING ─────────────────────────────────────────────────────────────
+// âââ DATA LOADING âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 async function loadData(){
   const [cRes, pRes, tRes, sRes, csRes] = await Promise.all([
     sb.from('clients').select('*').order('name'),
@@ -244,7 +244,7 @@ async function loadData(){
   const tasks    = tRes.data || [];
   const callSums = csRes.data || [];
 
-  // Group call summaries by client_id → role
+  // Group call summaries by client_id â role
   const csMap = {};
   callSums.forEach(r => {
     if(!csMap[r.client_id]) csMap[r.client_id] = {operations:[],finance:[],marketing:[]};
@@ -284,6 +284,7 @@ async function loadData(){
   _syncMeta.drive = syncRow.last_moi_sync  || null;
 
   _initClientSort();
+  _initAdvClientFilter();
   render();
 }
 
@@ -294,7 +295,7 @@ function fmtSync(ts){
   return `${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
 }
 
-// ─── HELPERS ─────────────────────────────────────────────────────────────────
+// âââ HELPERS âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 function moiTier(score){
   if(score>=6) return {name:'Remarkable',cls:'badge-moi-remarkable'};
   if(score>=5) return {name:'Excellent',cls:'badge-moi-excellent'};
@@ -306,7 +307,7 @@ function moiTier(score){
 function moiBadge(score){
   if(score===null||score===undefined) return '<span class="badge badge-nodata">No Data</span>';
   const t=moiTier(score);
-  return `<span class="badge ${t.cls}">${t.name} · ${score}</span>`;
+  return `<span class="badge ${t.cls}">${t.name} Â· ${score}</span>`;
 }
 
 function advBadge(adv){
@@ -323,7 +324,7 @@ function dueBadge(d){
   if(!d) return '<span class="task-due no-date">NO DATE</span>';
   const ds = d.slice(0,10);
   if(ds<TODAY) return `<span class="task-due overdue">Overdue</span>`;
-  if(ds===TODAY) return `<span class="task-due today">Today ⚡</span>`;
+  if(ds===TODAY) return `<span class="task-due today">Today â¡</span>`;
   if(ds<=IN7) return `<span class="task-due upcoming">${fmtDate(ds)}</span>`;
   return `<span class="task-due future">${fmtDate(ds)}</span>`;
 }
@@ -364,7 +365,7 @@ function clientNextDue(c){
   return {date:best,task};
 }
 
-// ─── ROUTER ──────────────────────────────────────────────────────────────────
+// âââ ROUTER ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 function toggleTheme(){
   const h=document.documentElement;
   const t=h.getAttribute('data-theme')==='dark'?'light':'dark';
@@ -374,7 +375,7 @@ function toggleTheme(){
 }
 function _syncThemeButtons(){
   const isDark=document.documentElement.getAttribute('data-theme')==='dark';
-  document.querySelectorAll('#theme-icon').forEach(el=>el.textContent=isDark?'☀️':'🌙');
+  document.querySelectorAll('#theme-icon').forEach(el=>el.textContent=isDark?'âï¸':'ð');
   document.querySelectorAll('#theme-label').forEach(el=>el.textContent=isDark?'Light':'Dark');
 }
 
@@ -383,7 +384,7 @@ function navigate(view,clientSlug=null,projIdx=null){
   render();window.scrollTo(0,0);
 }
 
-// ─── TEAM VIEW ────────────────────────────────────────────────────────────────
+// âââ TEAM VIEW ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 function renderTeam(){
   const upcoming=upcomingTasks();
   const cs=Math.ceil(CLIENTS.length/3);const col1=CLIENTS.slice(0,cs),col2=CLIENTS.slice(cs,cs*2),col3=CLIENTS.slice(cs*2);
@@ -399,10 +400,10 @@ function renderTeam(){
     const isToday=r.due===TODAY;
     const noDate=!r.due;
     return `<div class="upcoming-row${isToday?' today-row':''}" data-adv="${r.adv||''}" data-nodate="${noDate?'1':'0'}" onclick="navigate('client','${r.clientSlug}',${r.projIdx})">
-      <span style="font-size:13px;font-weight:${isToday?'700':'400'};color:${isToday?'#B45309':noDate?'#DC2626':'#94A3B8'};">${noDate?'<span style="font-size:10px;font-weight:700;color:#DC2626;">NO DATE</span>':fmtDate(r.due)}${isToday?' ⚡':''}</span>
+      <span style="font-size:13px;font-weight:${isToday?'700':'400'};color:${isToday?'#B45309':noDate?'#DC2626':'#94A3B8'};">${noDate?'<span style="font-size:10px;font-weight:700;color:#DC2626;">NO DATE</span>':fmtDate(r.due)}${isToday?' â¡':''}</span>
       <span style="font-size:13px;font-weight:500;">${esc(r.clientName)}</span>
-      <span style="font-size:13px;color:#64748B;">${esc(r.projName.length>22?r.projName.substring(0,22)+'…':r.projName)}</span>
-      <span style="font-size:13px;display:flex;align-items:center;gap:6px;">${r.adv?advBadge(r.adv):''}${esc(r.taskTitle.length>55?r.taskTitle.substring(0,55)+'…':r.taskTitle)}</span>
+      <span style="font-size:13px;color:#64748B;">${esc(r.projName.length>22?r.projName.substring(0,22)+'â¦':r.projName)}</span>
+      <span style="font-size:13px;display:flex;align-items:center;gap:6px;">${r.adv?advBadge(r.adv):''}${esc(r.taskTitle.length>55?r.taskTitle.substring(0,55)+'â¦':r.taskTitle)}</span>
     </div>`;
   }
 
@@ -415,14 +416,14 @@ function renderTeam(){
         <span style="font-size:15px;font-weight:700;flex:1;padding-right:8px;">${esc(c.name)}</span>
         ${moiBadge(c.moi?c.moi.score:null)}
       </div>
-      <div style="font-size:13px;color:#64748B;margin-bottom:3px;">${c.projects.filter(p=>p.status==='active').length} active project${c.projects.length!==1?'s':''} · ${pendingTasks} open task${pendingTasks!==1?'s':''}</div>
+      <div style="font-size:13px;color:#64748B;margin-bottom:3px;">${c.projects.filter(p=>p.status==='active').length} active project${c.projects.length!==1?'s':''} Â· ${pendingTasks} open task${pendingTasks!==1?'s':''}</div>
       <div style="font-size:13px;color:${isUrgent?'#B45309':'#64748B'};margin-bottom:14px;font-weight:${isUrgent?'600':'400'};">
-        ${nd.date?`${isUrgent?'⚡ Due today':'Next: '+fmtDate(nd.date)} — ${nd.task.length>40?nd.task.substring(0,40)+'…':nd.task}`:'No upcoming due dates'}
+        ${nd.date?`${isUrgent?'â¡ Due today':'Next: '+fmtDate(nd.date)} â ${nd.task.length>40?nd.task.substring(0,40)+'â¦':nd.task}`:'No upcoming due dates'}
       </div>
       <div class="divider"></div>
       <div style="display:flex;justify-content:space-between;align-items:center;">
         <div>${[...new Set(c.projects.map(p=>p.adv).filter(a=>a&&a!=='-'))].map(advBadge).join('')}</div>
-        <span style="font-size:13px;font-weight:600;color:#3B82F6;">Open →</span>
+        <span style="font-size:13px;font-weight:600;color:#3B82F6;">Open â</span>
       </div>
     </div>`;
   }
@@ -439,10 +440,10 @@ function renderTeam(){
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:36px;padding-top:20px;">
       <div>
         <h1>${greeting}, Merlin</h1>
-        <p class="sub">${dateStr} &nbsp;·&nbsp; Disciplined</p>
+        <p class="sub">${dateStr} &nbsp;Â·&nbsp; Disciplined</p>
       </div>
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:10px;">
-        <button class="theme-toggle" onclick="toggleTheme()"><span id="theme-icon">🌙</span><span class="theme-toggle-label" id="theme-label">Dark</span></button>
+        <button class="theme-toggle" onclick="toggleTheme()"><span id="theme-icon">ð</span><span class="theme-toggle-label" id="theme-label">Dark</span></button>
         <div style="text-align:right;font-size:12px;color:var(--text-3);line-height:1.8;">
           <div>Gong synced: ${fmtSync(_syncMeta.gong)}</div>
           <div>MOI synced: ${fmtSync(_syncMeta.drive)}</div>
@@ -461,11 +462,11 @@ function renderTeam(){
 
     <div style="margin-bottom:36px;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-        <div class="sec-label" style="margin-bottom:0;" id="upcoming-label">UPCOMING — NEXT 7 DAYS (${upcoming.length} tasks)</div>
+        <div class="sec-label" style="margin-bottom:0;" id="upcoming-label">UPCOMING â NEXT 7 DAYS (${upcoming.length} tasks)</div>
         <div style="position:relative;">
           <button onclick="_toggleAdvFilter(event)" id="adv-filter-btn" style="display:flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:5px 12px;font-size:12px;font-weight:600;color:var(--text-2);cursor:pointer;">
             <span id="adv-filter-label">Advisor: All</span>
-            <span style="font-size:9px;opacity:.6;">▼</span>
+            <span style="font-size:9px;opacity:.6;">â¼</span>
           </button>
           <div id="adv-filter-dropdown" style="display:none;position:absolute;right:0;top:calc(100% + 4px);background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow-md);padding:10px 14px;z-index:100;min-width:150px;">
             <label style="display:flex;align-items:center;gap:8px;padding:5px 0;font-size:13px;cursor:pointer;white-space:nowrap;">
@@ -488,7 +489,7 @@ function renderTeam(){
         </div>
       </div>
       ${upcoming.length===0
-        ?`<div class="card" style="text-align:center;color:#94A3B8;padding:32px;">🎉 No tasks due in the next 7 days</div>`
+        ?`<div class="card" style="text-align:center;color:#94A3B8;padding:32px;">ð No tasks due in the next 7 days</div>`
         :`<div class="upcoming-table" id="upcoming-table">
             <div class="upcoming-header">
               <span style="font-size:11px;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:.05em;">Due</span>
@@ -510,7 +511,7 @@ function renderTeam(){
   </div>`;
 }
 
-// ─── CLIENT VIEW ─────────────────────────────────────────────────────────────
+// âââ CLIENT VIEW âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 function fmtRelDate(iso){
   if(!iso) return '';
   var d=new Date(iso), now=new Date(), diff=now-d, s=Math.floor(diff/1000);
@@ -538,10 +539,10 @@ async function saveMergeAlias(oldName,clientSlug){
   var c=getClient(clientSlug);
   c.projects.forEach(function(p){if(p.id===targetId) targetProj=p;});
   if(!targetProj) return;
-  setBtnSaving('Saving…');
+  setBtnSaving('Savingâ¦');
   await sb.from('aliases').insert({type:'project',alias:oldName,canonical:targetProj.name});
   closeModal();
-  toast('Alias saved — future calls will route to '+targetProj.name);
+  toast('Alias saved â future calls will route to '+targetProj.name);
 }
 function _readClientSortCookie(){
   var m=document.cookie.match(/(?:^|;\s*)clientSort=([^;]+)/);
@@ -557,6 +558,34 @@ function _initClientSort(){
 }
 function _onProjSortChange(el){_state.projSort=el.value;_writeClientSortCookie();render();}
 function _onTaskSortChange(el){_state.taskSort=el.value;_writeClientSortCookie();render();}
+function _readAdvClientCookie(){
+  var m=document.cookie.match(/(?:^|;\s*)advClientFilter=([^;]+)/);
+  if(!m) return null;
+  try{return decodeURIComponent(m[1]);}catch(e){return null;}
+}
+function _writeAdvClientCookie(){
+  document.cookie='advClientFilter='+encodeURIComponent(_state.advClientFilter)+';max-age=31536000;path=/';
+}
+function _initAdvClientFilter(){
+  var v=_readAdvClientCookie();
+  if(v) _state.advClientFilter=v;
+}
+function _onAdvClientFilterChange(el){_state.advClientFilter=el.value;_writeAdvClientCookie();render();}
+function _toggleShowCompleted(pi){
+  if(_state.showCompletedTasks.has(pi)) _state.showCompletedTasks.delete(pi);
+  else _state.showCompletedTasks.add(pi);
+  render();
+}
+async function toggleProjectStatus(slug,pi){
+  const c=getClient(slug);
+  const p=c.projects[pi];
+  const next=p.status==='active'?'completed':'active';
+  const {error}=await sb.from('projects').update({status:next,updated_at:new Date().toISOString()}).eq('id',p.id);
+  if(error){ toast('Failed to update project','err'); return; }
+  p.status=next; p.updated_at=new Date().toISOString();
+  render();
+  toast(next==='completed'?'Project completed':'Project reopened');
+}
 function _sortProjects(projects,mode){
   var today=new Date().toISOString().slice(0,10);
   var arr=projects.map(function(p,i){return {p:p,i:i};});
@@ -601,57 +630,86 @@ function renderClient(){
   const focusProjIdx=_state.projIdx;
   if(focusProjIdx!==null&&!_state.expandedProjs.has(focusProjIdx)) _state.expandedProjs.add(focusProjIdx);
 
+  const af=_state.advClientFilter;
   const pendingTasks=c.projects.reduce((s,p)=>s+p.tasks.filter(t=>!t.completed).length,0);
   const completedTasks=c.projects.reduce((s,p)=>s+p.tasks.filter(t=>t.completed).length,0);
 
-  function renderProject(p,pi){
+  function taskMatchesAdv(t,p){ return af==='all'||(t.adv||p.adv)===af; }
+  function projPassesFilter(p,pi){
+    if(af==='all') return true;
+    if(p.tasks.length===0) return false;
+    return p.tasks.some(t=>taskMatchesAdv(t,p));
+  }
+
+  function renderTask(t,ti,p,pi){
+    return `<div class="task-row${!t.due_date?' no-date-row':''}" id="task-${t.id}">
+      <div class="task-cb${t.completed?' done':''}" onclick="toggleTask('${c.slug}',${pi},${ti})">${t.completed?'\u2713':''}</div>
+      <span class="task-title${t.completed?' done':''}">${esc(t.title)}</span>
+      ${advBadge(t.adv||p.adv)}
+      ${dueBadge(t.due_date)}
+      <span style="font-size:9px;color:var(--text-3,#94A3B8);white-space:nowrap;" title="Created: ${t.created_at?new Date(t.created_at).toLocaleDateString():'-'}">${t.updated_at?'upd '+fmtRelDate(t.updated_at):''}</span>
+      <div class="task-actions">
+        <button class="icon-btn" title="Edit task" onclick="editTask('${c.slug}',${pi},${ti})">\u270F\uFE0F</button>
+        <button class="icon-btn" title="Delete task" onclick="deleteTask('${c.slug}',${pi},${ti})">\uD83D\uDDD1\uFE0F</button>
+      </div>
+    </div>`;
+  }
+
+  function renderProject(p,pi,isCompletedSection){
     const isExpanded=_state.expandedProjs.has(pi);
     const pendingCount=p.tasks.filter(t=>!t.completed).length;
+    const completedCount=p.tasks.filter(t=>t.completed).length;
     const isFocused=pi===focusProjIdx;
+    const showCompleted=_state.showCompletedTasks.has(pi);
 
-    function renderTask(t,ti){
-      return `<div class="task-row${!t.due_date?' no-date-row':''}" id="task-${t.id}">
-        <div class="task-cb${t.completed?' done':''}" onclick="toggleTask('${c.slug}',${pi},${ti})">${t.completed?'✓':''}</div>
-        <span class="task-title${t.completed?' done':''}">${esc(t.title)}</span>
-        ${advBadge(t.adv||p.adv)}
-        ${dueBadge(t.due_date)}
-        <span style="font-size:9px;color:var(--text-3,#94A3B8);white-space:nowrap;" title="Created: ${t.created_at?new Date(t.created_at).toLocaleDateString():'-'}">${t.updated_at?'upd '+fmtRelDate(t.updated_at):''}</span>
-        <div class="task-actions">
-          <button class="icon-btn" title="Edit task" onclick="editTask('${c.slug}',${pi},${ti})">✏️</button>
-          <button class="icon-btn" title="Delete task" onclick="deleteTask('${c.slug}',${pi},${ti})">🗑️</button>
-        </div>
-      </div>`;
-    }
+    var visibleTasks=_sortTasks(p.tasks,_state.taskSort).filter(({t})=>taskMatchesAdv(t,p));
+    var openTasks=visibleTasks.filter(({t})=>!t.completed);
+    var doneTasks=visibleTasks.filter(({t})=>t.completed);
+    var tasksToRender=showCompleted?openTasks.concat(doneTasks):openTasks;
 
-    return `<div class="proj-card${isFocused?' focused':''}">
+    var completedToggle=doneTasks.length>0?`<div style="margin-top:8px;"><button class="btn btn-ghost btn-sm" style="font-size:11px;color:var(--text-3,#94A3B8);" onclick="event.stopPropagation();_toggleShowCompleted(${pi})">${showCompleted?'Hide':'Show'} ${doneTasks.length} completed task${doneTasks.length!==1?'s':''}</button></div>`:'';
+
+    var statusBtn=isCompletedSection
+      ?`<button class="btn btn-ghost btn-sm" style="font-size:11px;" onclick="toggleProjectStatus('${c.slug}',${pi})">Reopen</button>`
+      :`<button class="btn btn-ghost btn-sm" style="font-size:11px;color:#10B981;" onclick="toggleProjectStatus('${c.slug}',${pi})">\u2713 Complete</button>`;
+
+    return `<div class="proj-card${isFocused?' focused':''}" style="${isCompletedSection?'opacity:0.65;':''}">
       <div class="proj-header" onclick="toggleProj(${pi})" style="border-left:3px solid ${isFocused?'#3B82F6':'transparent'};">
         <div class="proj-header-left">
-          <span class="proj-expand-icon" style="transform:rotate(${isExpanded?'90':'0'}deg);">▶</span>
-          <span class="proj-name">${esc(p.name)}</span>
+          <span class="proj-expand-icon" style="transform:rotate(${isExpanded?'90':'0'}deg);">\u25B6</span>
+          <span class="proj-name" ${isCompletedSection?'style="text-decoration:line-through;"':''}>${esc(p.name)}</span>
           ${advBadge(p.adv)}
           ${p.updated_at?'<span style="font-size:10px;color:var(--text-3,#94A3B8);margin-left:6px;" title="Created: '+(p.created_at?new Date(p.created_at).toLocaleDateString():'-')+'">updated '+fmtRelDate(p.updated_at)+'</span>':''}
           ${pendingCount>0?`<span style="font-size:11px;background:#F1F5F9;color:#64748B;padding:2px 8px;border-radius:9999px;">${pendingCount} open</span>`:''}
         </div>
         <div style="display:flex;gap:8px;flex-shrink:0;" onclick="event.stopPropagation()">
+          ${statusBtn}
           <button class="btn btn-ghost btn-sm" onclick="editProject('${c.slug}',${pi})">Edit</button>
           <button class="btn btn-danger btn-sm" onclick="deleteProject('${c.slug}',${pi})">Delete</button>
         </div>
       </div>
       ${isExpanded?`
       <div class="proj-body">
-        <div class="task-list">${p.tasks.length>0?_sortTasks(p.tasks,_state.taskSort).map(({t,i})=>renderTask(t,i)).join(''):'<div class="empty-state">No tasks yet.</div>'}</div>
+        <div class="task-list">${tasksToRender.length>0?tasksToRender.map(({t,i})=>renderTask(t,i,p,pi)).join(''):'<div class="empty-state">'+(af!=='all'&&p.tasks.length>0?'No tasks match this advisor filter.':'No tasks yet.')+'</div>'}</div>
+        ${completedToggle}
         <div style="margin-top:12px;">
-          <button class="btn btn-primary btn-sm" onclick="addTask('${c.slug}',${pi})">＋ Add Task</button>
+          <button class="btn btn-primary btn-sm" onclick="addTask('${c.slug}',${pi})">\uFF0B Add Task</button>
         </div>
       </div>`:''}
     </div>`;
   }
 
+  var allSorted=_sortProjects(c.projects,_state.projSort);
+  var activeProjs=allSorted.filter(({p,i})=>p.status!=='completed'&&(af==='all'||projPassesFilter(p,i)));
+  var completedProjs=allSorted.filter(({p})=>p.status==='completed');
+  var emptyActiveProjs=af==='all'?allSorted.filter(({p})=>p.status!=='completed'&&p.tasks.length===0):[];
+  // When "all", empty projects are already in activeProjs. When filtered, they're excluded by projPassesFilter.
+
   return `
   <div class="wrap">
     <div class="nav" style="justify-content:space-between;">
-      <button class="nav-back" onclick="navigate('team')">← Team Dashboard</button>
-      <button class="theme-toggle" onclick="toggleTheme()"><span id="theme-icon">🌙</span><span class="theme-toggle-label" id="theme-label">Dark</span></button>
+      <button class="nav-back" onclick="navigate('team')">\u2190 Team Dashboard</button>
+      <button class="theme-toggle" onclick="toggleTheme()"><span id="theme-icon">\uD83C\uDF19</span><span class="theme-toggle-label" id="theme-label">Dark</span></button>
     </div>
     <div class="client-hero">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;">
@@ -659,16 +717,25 @@ function renderClient(){
           <h1>${esc(c.name)}</h1>
           <div style="display:flex;align-items:center;gap:10px;margin-top:8px;">
             ${moiBadge(c.moi?c.moi.score:null)}
-            <span style="font-size:13px;color:#64748B;">${c.projects.length} projects · ${pendingTasks} open tasks · ${completedTasks} done</span>
+            <span style="font-size:13px;color:#64748B;">${c.projects.length} projects \u00B7 ${pendingTasks} open tasks \u00B7 ${completedTasks} done</span>
           </div>
         </div>
         <div style="display:flex;gap:10px;">
-          <button class="btn btn-primary" onclick="addProject('${c.slug}')">＋ Add Project</button>
+          <button class="btn btn-primary" onclick="addProject('${c.slug}')">\uFF0B Add Project</button>
         </div>
       </div>
     </div>
     ${renderCallCharts(c)}
     <div style="display:flex;align-items:center;gap:16px;margin:16px 0 8px;flex-wrap:wrap;">
+      <div style="display:flex;align-items:center;gap:6px;">
+        <label style="font-size:12px;font-weight:600;color:var(--text-secondary,#64748B);text-transform:uppercase;letter-spacing:0.5px;">Advisor</label>
+        <select onchange="_onAdvClientFilterChange(this)" style="font-size:12px;padding:4px 8px;border:1px solid var(--border,#E2E8F0);border-radius:6px;background:var(--card-bg,#fff);color:var(--text-primary,#1E293B);cursor:pointer;">
+          <option value="all"${af==='all'?' selected':''}>All</option>
+          <option value="O"${af==='O'?' selected':''}>OPS</option>
+          <option value="F"${af==='F'?' selected':''}>FIN</option>
+          <option value="M"${af==='M'?' selected':''}>MKTG</option>
+        </select>
+      </div>
       <div style="display:flex;align-items:center;gap:6px;">
         <label style="font-size:12px;font-weight:600;color:var(--text-secondary,#64748B);text-transform:uppercase;letter-spacing:0.5px;">Projects</label>
         <select onchange="_onProjSortChange(this)" style="font-size:12px;padding:4px 8px;border:1px solid var(--border,#E2E8F0);border-radius:6px;background:var(--card-bg,#fff);color:var(--text-primary,#1E293B);cursor:pointer;">
@@ -689,12 +756,21 @@ function renderClient(){
       </div>
     </div>
     <div class="proj-list">
-      ${c.projects.length>0?_sortProjects(c.projects,_state.projSort).map(({p,i})=>renderProject(p,i)).join(''):'<div class="card empty-state">No projects yet. Add one above.</div>'}
+      ${activeProjs.length>0?activeProjs.map(({p,i})=>renderProject(p,i,false)).join(''):(c.projects.length>0&&completedProjs.length===0?'<div class="card empty-state">No projects match this filter.</div>':'<div class="card empty-state">No active projects. Add one above.</div>')}
     </div>
+    ${completedProjs.length>0?`
+    <div style="margin-top:24px;">
+      <div class="completed-section-header" onclick="document.getElementById('completed-projs').classList.toggle('hidden');this.querySelector('.proj-expand-icon').style.transform=document.getElementById('completed-projs').classList.contains('hidden')?'rotate(0deg)':'rotate(90deg)';" style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:8px 0;border-top:1px solid var(--border,#E2E8F0);">
+        <span class="proj-expand-icon" style="font-size:10px;transition:transform 0.15s;transform:rotate(0deg);">\u25B6</span>
+        <span style="font-size:13px;font-weight:600;color:var(--text-secondary,#64748B);text-transform:uppercase;letter-spacing:0.5px;">Completed (${completedProjs.length})</span>
+      </div>
+      <div id="completed-projs" class="proj-list hidden">
+        ${completedProjs.map(({p,i})=>renderProject(p,i,true)).join('')}
+      </div>
+    </div>`:''}
   </div>`;
 }
-
-// ─── MOI CHART HELPERS ───────────────────────────────────────────────────────
+// âââ MOI CHART HELPERS âââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 const ROLE_COLOR = {operations:'#3B82F6', finance:'#10B981', marketing:'#8B5CF6'};
 const ROLE_LABEL = {operations:'Operations', finance:'Finance', marketing:'Marketing'};
 
@@ -721,7 +797,7 @@ function buildMOIChart(entries, role){
     ? `<polyline points="${coords.map(c=>`${c.x.toFixed(1)},${c.y.toFixed(1)}`).join(' ')}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`
     : '';
   const dots=coords.map(c=>`<circle cx="${c.x.toFixed(1)}" cy="${c.y.toFixed(1)}" r="5" fill="${color}" stroke="var(--surface)" stroke-width="2" style="cursor:pointer" `+
-    `onmouseenter="showChartTip(event,'${fmtDate(c.e.call_date)} · ${c.e.moi_score}')" onmouseleave="hideChartTip()" `+
+    `onmouseenter="showChartTip(event,'${fmtDate(c.e.call_date)} Â· ${c.e.moi_score}')" onmouseleave="hideChartTip()" `+
     `onclick="showCallSummary('${role}','${c.e.call_date}')"/>`).join('');
   return `<svg viewBox="0 0 ${W} ${H}" width="100%" style="overflow:visible">${grids}${poly}${dots}</svg>`;
 }
@@ -751,7 +827,7 @@ function renderCallCharts(c){
     `</div>`;
   }).join('');
   return `<div style="margin-bottom:28px;">`+
-    `<div class="sec-label">MOI CALL SCORES — LAST 12 WEEKS</div>`+
+    `<div class="sec-label">MOI CALL SCORES â LAST 12 WEEKS</div>`+
     `<div class="chart-panel-grid">${panels}</div>`+
   `</div>`;
 }
@@ -782,9 +858,9 @@ function showCallSummary(role, callDate){
     `<div class="call-modal">`+
       `<div class="call-modal-header">`+
         `<div>`+
-          `<div class="call-modal-title">${ROLE_LABEL[role]} Call — ${fmtDate(callDate)}</div>`+
+          `<div class="call-modal-title">${ROLE_LABEL[role]} Call â ${fmtDate(callDate)}</div>`+
         `</div>`+
-        `<button onclick="closeCallSummary()" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--text-3);padding:4px;line-height:1;flex-shrink:0;">×</button>`+
+        `<button onclick="closeCallSummary()" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--text-3);padding:4px;line-height:1;flex-shrink:0;">Ã</button>`+
       `</div>`+
       `<div class="call-modal-body">`+
         (d.strategic_summary?`<div style="margin-bottom:20px;"><div class="sec-label" style="margin-bottom:8px;">STRATEGIC SUMMARY</div><p style="font-size:13px;color:var(--text-2);line-height:1.6;">${esc(d.strategic_summary)}</p></div>`:'')+
@@ -804,18 +880,18 @@ function showChartTip(e,txt){
 }
 function hideChartTip(){ document.getElementById('chart-tooltip').style.display='none'; }
 
-// ─── LOADING / ERROR VIEWS ───────────────────────────────────────────────────
+// âââ LOADING / ERROR VIEWS âââââââââââââââââââââââââââââââââââââââââââââââââââ
 function renderLoading(){
   return `<div class="wrap" style="display:flex;align-items:center;justify-content:center;min-height:60vh;">
     <div style="text-align:center;color:var(--text-3);">
-      <div style="font-size:32px;margin-bottom:12px;">⏳</div>
-      <div style="font-size:14px;">Loading dashboard…</div>
+      <div style="font-size:32px;margin-bottom:12px;">â³</div>
+      <div style="font-size:14px;">Loading dashboardâ¦</div>
     </div>
   </div>`;
 }
 
-// ─── MAIN RENDER ─────────────────────────────────────────────────────────────
-// ─── ADVISOR FILTER (UPCOMING TABLE) ─────────────────────────────────────────
+// âââ MAIN RENDER âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// âââ ADVISOR FILTER (UPCOMING TABLE) âââââââââââââââââââââââââââââââââââââââââ
 function _readAdvFilterCookie(){
   const m=document.cookie.match(/(?:^|;\s*)advFilter=([^;]+)/);
   return m?JSON.parse(decodeURIComponent(m[1])):null;
@@ -844,7 +920,7 @@ function _applyAdvFilter(){
     if(show) visible++;
   });
   const label=document.getElementById('upcoming-label');
-  if(label) label.textContent='UPCOMING — NEXT 7 DAYS ('+(allAdvChecked&&!showNoDate?rows.length:visible)+' of '+rows.length+' tasks)';
+  if(label) label.textContent='UPCOMING â NEXT 7 DAYS ('+(allAdvChecked&&!showNoDate?rows.length:visible)+' of '+rows.length+' tasks)';
   const btnLabel=document.getElementById('adv-filter-label');
   if(btnLabel) btnLabel.textContent=allAdvChecked?'Advisor: All':'Advisor: '+checked.map(a=>a==='O'?'OPS':a==='F'?'FIN':a==='M'?'MKTG':'Unassigned').join(', ');
 }
@@ -892,7 +968,7 @@ function render(){
   }
 }
 
-// ─── INTERACTIONS ─────────────────────────────────────────────────────────────
+// âââ INTERACTIONS âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 function toggleProj(pi){
   if(_state.expandedProjs.has(pi)) _state.expandedProjs.delete(pi);
   else _state.expandedProjs.add(pi);
@@ -908,13 +984,13 @@ async function toggleTask(slug,pi,ti){
   render();
 }
 
-// ─── MODAL HELPERS ───────────────────────────────────────────────────────────
+// âââ MODAL HELPERS âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 let _modalOpen = false;
 function showModal(html){ _modalOpen=true; const m=document.getElementById('modal');m.classList.remove('hidden');m.innerHTML=html; }
 function closeModal(){ _modalOpen=false; document.getElementById('modal').classList.add('hidden'); }
 function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
-// ─── TOAST & SAVE HELPERS ────────────────────────────────────────────────────
+// âââ TOAST & SAVE HELPERS ââââââââââââââââââââââââââââââââââââââââââââââââââââ
 let _toastTimer=null;
 function toast(msg,type='ok'){
   const el=document.getElementById('toast');
@@ -931,7 +1007,7 @@ function clearBtnSaving(){
   btns.forEach(b=>b.classList.remove('saving'));
 }
 
-// ─── ADD PROJECT ─────────────────────────────────────────────────────────────
+// âââ ADD PROJECT âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 function addProject(slug){
   showModal(`<div class="modal">
     <div class="modal-title">Add Project</div>
@@ -939,9 +1015,9 @@ function addProject(slug){
     <div class="form-group"><label>Advisor</label>
       <select id="pa">
         <option value="">Unassigned</option>
-        <option value="O">Ops — Merlin Ward</option>
-        <option value="F">Finance — Mike Jensen</option>
-        <option value="M">Marketing — Justin Cook</option>
+        <option value="O">Ops â Merlin Ward</option>
+        <option value="F">Finance â Mike Jensen</option>
+        <option value="M">Marketing â Justin Cook</option>
       </select>
     </div>
     <div class="modal-footer">
@@ -955,7 +1031,7 @@ async function saveAddProject(slug){
   const name=document.getElementById('pn').value.trim();
   const adv=document.getElementById('pa').value||null;
   if(!name) return alert('Please enter a project name.');
-  setBtnSaving('Adding…');
+  setBtnSaving('Addingâ¦');
   const c=getClient(slug);
   const newId=pid();
   const pi=c.projects.length;
@@ -968,7 +1044,7 @@ async function saveAddProject(slug){
   toast('Project added');
 }
 
-// ─── EDIT PROJECT ────────────────────────────────────────────────────────────
+// âââ EDIT PROJECT ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 function editProject(slug,pi){
   const p=getClient(slug).projects[pi];
   showModal(`<div class="modal">
@@ -977,9 +1053,9 @@ function editProject(slug,pi){
     <div class="form-group"><label>Advisor</label>
       <select id="pa">
         <option value="" ${!p.adv?'selected':''}>Unassigned</option>
-        <option value="O" ${p.adv==='O'?'selected':''}>Ops — Merlin Ward</option>
-        <option value="F" ${p.adv==='F'?'selected':''}>Finance — Mike Jensen</option>
-        <option value="M" ${p.adv==='M'?'selected':''}>Marketing — Justin Cook</option>
+        <option value="O" ${p.adv==='O'?'selected':''}>Ops â Merlin Ward</option>
+        <option value="F" ${p.adv==='F'?'selected':''}>Finance â Mike Jensen</option>
+        <option value="M" ${p.adv==='M'?'selected':''}>Marketing â Justin Cook</option>
       </select>
     </div>
     <div class="modal-footer">
@@ -1001,7 +1077,7 @@ async function saveEditProject(slug,pi){
   toast('Project saved');
 }
 
-// ─── DELETE PROJECT ──────────────────────────────────────────────────────────
+// âââ DELETE PROJECT ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 function deleteProject(slug,pi){
   const p=getClient(slug).projects[pi];
   showModal(`<div class="modal">
@@ -1015,7 +1091,7 @@ function deleteProject(slug,pi){
   </div>`);
 }
 async function confirmDeleteProject(slug,pi){
-  setBtnSaving('Deleting…');
+  setBtnSaving('Deletingâ¦');
   const c=getClient(slug);
   const p=c.projects[pi];
   const {error}=await sb.from('projects').update({deleted_at:new Date().toISOString()}).eq('id',p.id);
@@ -1028,19 +1104,19 @@ async function confirmDeleteProject(slug,pi){
   promptMergeAlias(p.name,slug);
 }
 
-// ─── ADD TASK ────────────────────────────────────────────────────────────────
+// âââ ADD TASK ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 function addTask(slug,pi){
   const proj=getClient(slug).projects[pi];
   const a=proj.adv||'';
   showModal(`<div class="modal">
     <div class="modal-title">Add Task</div>
-    <div class="form-group"><label>Task Title</label><textarea id="tt" rows="2" placeholder="Describe the task…"></textarea></div>
+    <div class="form-group"><label>Task Title</label><textarea id="tt" rows="2" placeholder="Describe the taskâ¦"></textarea></div>
     <div class="form-group"><label>Due Date (optional)</label><input id="td" type="date" /></div>
     <div class="form-group"><label>Advisor</label><select id="ta">
       <option value="" ${a===''?'selected':''}>Unassigned</option>
-      <option value="O" ${a==='O'?'selected':''}>Ops — Merlin Ward</option>
-      <option value="F" ${a==='F'?'selected':''}>Finance — Mike Jensen</option>
-      <option value="M" ${a==='M'?'selected':''}>Marketing — Justin Cook</option>
+      <option value="O" ${a==='O'?'selected':''}>Ops â Merlin Ward</option>
+      <option value="F" ${a==='F'?'selected':''}>Finance â Mike Jensen</option>
+      <option value="M" ${a==='M'?'selected':''}>Marketing â Justin Cook</option>
     </select></div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
@@ -1054,7 +1130,7 @@ async function saveAddTask(slug,pi){
   const due=document.getElementById('td').value||null;
   const adv=document.getElementById('ta').value||null;
   if(!title) return alert('Please enter a task title.');
-  setBtnSaving('Adding…');
+  setBtnSaving('Addingâ¦');
   const proj=getClient(slug).projects[pi];
   const newId=tid();
   const {error}=await sb.from('tasks').insert({id:newId,project_id:proj.id,title,due_date:due,completed:false,adv,sort_order:proj.tasks.length});
@@ -1065,7 +1141,7 @@ async function saveAddTask(slug,pi){
   toast('Task added');
 }
 
-// ─── EDIT TASK ───────────────────────────────────────────────────────────────
+// âââ EDIT TASK âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 function editTask(slug,pi,ti){
   const t=getClient(slug).projects[pi].tasks[ti];
   const proj=getClient(slug).projects[pi];
@@ -1076,9 +1152,9 @@ function editTask(slug,pi,ti){
     <div class="form-group"><label>Due Date (optional)</label><input id="td" type="date" value="${t.due_date?t.due_date.slice(0,10):''}" /></div>
     <div class="form-group"><label>Advisor</label><select id="ta">
       <option value="" ${a===''?'selected':''}>Unassigned</option>
-      <option value="O" ${a==='O'?'selected':''}>Ops — Merlin Ward</option>
-      <option value="F" ${a==='F'?'selected':''}>Finance — Mike Jensen</option>
-      <option value="M" ${a==='M'?'selected':''}>Marketing — Justin Cook</option>
+      <option value="O" ${a==='O'?'selected':''}>Ops â Merlin Ward</option>
+      <option value="F" ${a==='F'?'selected':''}>Finance â Mike Jensen</option>
+      <option value="M" ${a==='M'?'selected':''}>Marketing â Justin Cook</option>
     </select></div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
@@ -1100,13 +1176,13 @@ async function saveEditTask(slug,pi,ti){
   toast('Task saved');
 }
 
-// ─── DELETE TASK ─────────────────────────────────────────────────────────────
+// âââ DELETE TASK âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 function deleteTask(slug,pi,ti){
   const t=getClient(slug).projects[pi].tasks[ti];
   showModal(`<div class="modal">
     <div class="modal-title">Delete Task</div>
     <p style="font-size:14px;color:#64748B;margin-bottom:8px;">Delete this task?</p>
-    <p style="font-size:13px;color:#0F172A;font-style:italic;margin-bottom:8px;">"${esc(t.title.length>80?t.title.substring(0,80)+'…':t.title)}"</p>
+    <p style="font-size:13px;color:#0F172A;font-style:italic;margin-bottom:8px;">"${esc(t.title.length>80?t.title.substring(0,80)+'â¦':t.title)}"</p>
     <p style="font-size:13px;color:#94A3B8;">This cannot be undone.</p>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
@@ -1115,7 +1191,7 @@ function deleteTask(slug,pi,ti){
   </div>`);
 }
 async function confirmDeleteTask(slug,pi,ti){
-  setBtnSaving('Deleting…');
+  setBtnSaving('Deletingâ¦');
   const t=getClient(slug).projects[pi].tasks[ti];
   const {error}=await sb.from('tasks').update({deleted_at:new Date().toISOString()}).eq('id',t.id);
   if(error){ clearBtnSaving(); toast('Failed to delete task: '+error.message,'err'); return; }
@@ -1127,10 +1203,10 @@ async function confirmDeleteTask(slug,pi,ti){
 // Close modal on backdrop click
 document.getElementById('modal').addEventListener('click',function(e){ if(e.target===this) closeModal(); });
 
-// ─── REAL-TIME SUBSCRIPTION ──────────────────────────────────────────────────
+// âââ REAL-TIME SUBSCRIPTION ââââââââââââââââââââââââââââââââââââââââââââââââââ
 function onRealtimeChange(){
   if(_modalOpen){
-    toast('Data updated by another user — close and re-open your edit','warn');
+    toast('Data updated by another user â close and re-open your edit','warn');
   } else {
     loadData();
   }
@@ -1141,7 +1217,7 @@ sb.channel('dashboard-live')
   .on('postgres_changes',{event:'*',schema:'public',table:'clients'},  ()=>onRealtimeChange())
   .subscribe();
 
-// ─── INIT ────────────────────────────────────────────────────────────────────
+// âââ INIT ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 document.getElementById('app').innerHTML = renderLoading();
 loadData();
 </script>
