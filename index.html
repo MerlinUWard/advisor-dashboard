@@ -234,8 +234,8 @@ let _state = {view:'team', clientSlug:null, projIdx:null, expandedProjs:new Set(
 async function loadData(){
   const [cRes, pRes, tRes, sRes, csRes] = await Promise.all([
     sb.from('clients').select('*').order('name'),
-    sb.from('projects').select('*').order('sort_order'),
-    sb.from('tasks').select('*').order('sort_order'),
+    sb.from('projects').select('*').is('deleted_at',null).order('sort_order'),
+    sb.from('tasks').select('*').is('deleted_at',null).order('sort_order'),
     sb.from('sync_state').select('last_gong_sync,last_moi_sync').eq('id','singleton').single(),
     sb.from('advisor_call_summaries').select('*').order('call_date',{ascending:true}),
   ]);
@@ -263,6 +263,8 @@ async function loadData(){
         name:   p.name,
         status: p.status,
         adv:    p.adv,
+        created_at: p.created_at,
+        updated_at: p.updated_at,
         tasks:  tasks
           .filter(t => t.project_id === p.id)
           .map(t => ({
@@ -271,6 +273,8 @@ async function loadData(){
             due_date:  t.due_date || null,
             completed: t.completed,
             adv:       t.adv,
+            created_at: t.created_at,
+            updated_at: t.updated_at,
           }))
       }))
   }));
@@ -507,6 +511,38 @@ function renderTeam(){
 }
 
 // ─── CLIENT VIEW ─────────────────────────────────────────────────────────────
+function fmtRelDate(iso){
+  if(!iso) return '';
+  var d=new Date(iso), now=new Date(), diff=now-d, s=Math.floor(diff/1000);
+  if(s<60) return 'just now';
+  if(s<3600) return Math.floor(s/60)+'m ago';
+  if(s<86400) return Math.floor(s/3600)+'h ago';
+  if(s<604800) return Math.floor(s/86400)+'d ago';
+  return d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+}
+function promptMergeAlias(deletedName,clientSlug){
+  var c=getClient(clientSlug);
+  if(!c||c.projects.length===0) return;
+  var opts=c.projects.map(function(p,i){return '<option value="'+p.id+'">'+esc(p.name)+'</option>';}).join('');
+  showModal('<div class="modal"><div class="modal-title">Redirect Future Calls?</div>'
+    +'<p style="font-size:13px;color:var(--text-2,#64748B);margin-bottom:12px;">If a future Gong call mentions <strong>'+esc(deletedName)+'</strong>, should new tasks be added to another project?</p>'
+    +'<div class="form-group"><label>Redirect to</label><select id="merge-target">'+opts+'</select></div>'
+    +'<div class="modal-footer">'
+    +'<button class="btn btn-ghost" onclick="closeModal()">No, skip</button>'
+    +'<button class="btn btn-primary" onclick="saveMergeAlias(\''+deletedName.replace(/'/g,"\\'")+'\'  ,\''+clientSlug+'\')">Yes, redirect</button>'
+    +'</div></div>');
+}
+async function saveMergeAlias(oldName,clientSlug){
+  var targetId=document.getElementById('merge-target').value;
+  var targetProj=null;
+  var c=getClient(clientSlug);
+  c.projects.forEach(function(p){if(p.id===targetId) targetProj=p;});
+  if(!targetProj) return;
+  setBtnSaving('Saving…');
+  await sb.from('aliases').insert({type:'project',alias:oldName,canonical:targetProj.name});
+  closeModal();
+  toast('Alias saved — future calls will route to '+targetProj.name);
+}
 function _readClientSortCookie(){
   var m=document.cookie.match(/(?:^|;\s*)clientSort=([^;]+)/);
   if(!m) return null;
@@ -579,6 +615,7 @@ function renderClient(){
         <span class="task-title${t.completed?' done':''}">${esc(t.title)}</span>
         ${advBadge(t.adv||p.adv)}
         ${dueBadge(t.due_date)}
+        <span style="font-size:9px;color:var(--text-3,#94A3B8);white-space:nowrap;" title="Created: ${t.created_at?new Date(t.created_at).toLocaleDateString():'-'}">${t.updated_at?'upd '+fmtRelDate(t.updated_at):''}</span>
         <div class="task-actions">
           <button class="icon-btn" title="Edit task" onclick="editTask('${c.slug}',${pi},${ti})">✏️</button>
           <button class="icon-btn" title="Delete task" onclick="deleteTask('${c.slug}',${pi},${ti})">🗑️</button>
@@ -592,6 +629,7 @@ function renderClient(){
           <span class="proj-expand-icon" style="transform:rotate(${isExpanded?'90':'0'}deg);">▶</span>
           <span class="proj-name">${esc(p.name)}</span>
           ${advBadge(p.adv)}
+          ${p.updated_at?'<span style="font-size:10px;color:var(--text-3,#94A3B8);margin-left:6px;" title="Created: '+(p.created_at?new Date(p.created_at).toLocaleDateString():'-')+'">updated '+fmtRelDate(p.updated_at)+'</span>':''}
           ${pendingCount>0?`<span style="font-size:11px;background:#F1F5F9;color:#64748B;padding:2px 8px;border-radius:9999px;">${pendingCount} open</span>`:''}
         </div>
         <div style="display:flex;gap:8px;flex-shrink:0;" onclick="event.stopPropagation()">
@@ -864,7 +902,7 @@ function toggleProj(pi){
 async function toggleTask(slug,pi,ti){
   const t=getClient(slug).projects[pi].tasks[ti];
   const next=!t.completed;
-  const {error}=await sb.from('tasks').update({completed:next}).eq('id',t.id);
+  const {error}=await sb.from('tasks').update({completed:next,updated_at:new Date().toISOString()}).eq('id',t.id);
   if(error){ toast('Failed to update task','err'); return; }
   t.completed=next;
   render();
@@ -923,7 +961,8 @@ async function saveAddProject(slug){
   const pi=c.projects.length;
   const {error}=await sb.from('projects').insert({id:newId,client_id:slug,name,status:'active',adv,sort_order:pi});
   if(error){ clearBtnSaving(); toast('Failed to add project: '+error.message,'err'); return; }
-  c.projects.push({id:newId,name,status:'active',adv,tasks:[]});
+  var _now=new Date().toISOString();
+  c.projects.push({id:newId,name,status:'active',adv,tasks:[],created_at:_now,updated_at:_now});
   _state.expandedProjs.add(pi);
   closeModal(); render();
   toast('Project added');
@@ -955,7 +994,7 @@ async function saveEditProject(slug,pi){
   if(!name) return alert('Please enter a project name.');
   setBtnSaving();
   const p=getClient(slug).projects[pi];
-  const {error}=await sb.from('projects').update({name,adv}).eq('id',p.id);
+  const {error}=await sb.from('projects').update({name,adv,updated_at:new Date().toISOString()}).eq('id',p.id);
   if(error){ clearBtnSaving(); toast('Failed to save project: '+error.message,'err'); return; }
   p.name=name; p.adv=adv;
   closeModal(); render();
@@ -979,12 +1018,14 @@ async function confirmDeleteProject(slug,pi){
   setBtnSaving('Deleting…');
   const c=getClient(slug);
   const p=c.projects[pi];
-  const {error}=await sb.from('projects').delete().eq('id',p.id);
+  const {error}=await sb.from('projects').update({deleted_at:new Date().toISOString()}).eq('id',p.id);
   if(error){ clearBtnSaving(); toast('Failed to delete project: '+error.message,'err'); return; }
+  await sb.from('tasks').update({deleted_at:new Date().toISOString()}).eq('project_id',p.id).is('deleted_at',null);
   c.projects.splice(pi,1);
   _state.expandedProjs.clear(); _state.projIdx=null;
   closeModal(); render();
   toast('Project deleted');
+  promptMergeAlias(p.name,slug);
 }
 
 // ─── ADD TASK ────────────────────────────────────────────────────────────────
@@ -1018,7 +1059,8 @@ async function saveAddTask(slug,pi){
   const newId=tid();
   const {error}=await sb.from('tasks').insert({id:newId,project_id:proj.id,title,due_date:due,completed:false,adv,sort_order:proj.tasks.length});
   if(error){ clearBtnSaving(); toast('Failed to add task: '+error.message,'err'); return; }
-  proj.tasks.push({id:newId,title,due_date:due,completed:false,adv});
+  var _now=new Date().toISOString();
+  proj.tasks.push({id:newId,title,due_date:due,completed:false,adv,created_at:_now,updated_at:_now});
   closeModal(); render();
   toast('Task added');
 }
@@ -1051,7 +1093,7 @@ async function saveEditTask(slug,pi,ti){
   if(!title) return alert('Please enter a task title.');
   setBtnSaving();
   const t=getClient(slug).projects[pi].tasks[ti];
-  const {error}=await sb.from('tasks').update({title,due_date:due,adv}).eq('id',t.id);
+  const {error}=await sb.from('tasks').update({title,due_date:due,adv,updated_at:new Date().toISOString()}).eq('id',t.id);
   if(error){ clearBtnSaving(); toast('Failed to save task: '+error.message,'err'); return; }
   t.title=title; t.due_date=due; t.adv=adv;
   closeModal(); render();
@@ -1075,7 +1117,7 @@ function deleteTask(slug,pi,ti){
 async function confirmDeleteTask(slug,pi,ti){
   setBtnSaving('Deleting…');
   const t=getClient(slug).projects[pi].tasks[ti];
-  const {error}=await sb.from('tasks').delete().eq('id',t.id);
+  const {error}=await sb.from('tasks').update({deleted_at:new Date().toISOString()}).eq('id',t.id);
   if(error){ clearBtnSaving(); toast('Failed to delete task: '+error.message,'err'); return; }
   getClient(slug).projects[pi].tasks.splice(ti,1);
   closeModal(); render();
