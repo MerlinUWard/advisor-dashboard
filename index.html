@@ -228,7 +228,7 @@ function pid(){ return 'p-'+(++_nextId)+'-'+Math.random().toString(36).slice(2,6
 // ─── STATE ────────────────────────────────────────────────────────────────────
 let CLIENTS = [];
 let _syncMeta = { gong: null, drive: null };
-let _state = {view:'team', clientSlug:null, projIdx:null, expandedProjs:new Set()};
+let _state = {view:'team', clientSlug:null, projIdx:null, expandedProjs:new Set(), projSort:'alpha-az', taskSort:'due'};
 
 // ─── DATA LOADING ─────────────────────────────────────────────────────────────
 async function loadData(){
@@ -279,6 +279,7 @@ async function loadData(){
   _syncMeta.gong  = syncRow.last_gong_sync || null;
   _syncMeta.drive = syncRow.last_moi_sync  || null;
 
+  _initClientSort();
   render();
 }
 
@@ -506,6 +507,58 @@ function renderTeam(){
 }
 
 // ─── CLIENT VIEW ─────────────────────────────────────────────────────────────
+function _readClientSortCookie(){
+  var m=document.cookie.match(/(?:^|;\s*)clientSort=([^;]+)/);
+  if(!m) return null;
+  try{return JSON.parse(decodeURIComponent(m[1]));}catch(e){return null;}
+}
+function _writeClientSortCookie(){
+  document.cookie='clientSort='+encodeURIComponent(JSON.stringify({proj:_state.projSort,task:_state.taskSort}))+';max-age=31536000;path=/';
+}
+function _initClientSort(){
+  var c=_readClientSortCookie();
+  if(c){_state.projSort=c.proj||'alpha-az';_state.taskSort=c.task||'due';}
+}
+function _onProjSortChange(el){_state.projSort=el.value;_writeClientSortCookie();render();}
+function _onTaskSortChange(el){_state.taskSort=el.value;_writeClientSortCookie();render();}
+function _sortProjects(projects,mode){
+  var today=new Date().toISOString().slice(0,10);
+  var arr=projects.map(function(p,i){return {p:p,i:i};});
+  switch(mode){
+    case 'alpha-az':arr.sort(function(a,b){return a.p.name.localeCompare(b.p.name);});break;
+    case 'alpha-za':arr.sort(function(a,b){return b.p.name.localeCompare(a.p.name);});break;
+    case 'overdue':arr.sort(function(a,b){
+      var oa=a.p.tasks.filter(function(t){return !t.completed&&t.due_date&&t.due_date.slice(0,10)<today;}).length;
+      var ob=b.p.tasks.filter(function(t){return !t.completed&&t.due_date&&t.due_date.slice(0,10)<today;}).length;
+      return ob-oa||a.p.name.localeCompare(b.p.name);
+    });break;
+    case 'recent':arr.sort(function(a,b){
+      var ma=a.p.tasks.reduce(function(mx,t){return t.due_date&&t.due_date.slice(0,10)>mx?t.due_date.slice(0,10):mx;},'');
+      var mb=b.p.tasks.reduce(function(mx,t){return t.due_date&&t.due_date.slice(0,10)>mx?t.due_date.slice(0,10):mx;},'');
+      if(!ma&&!mb) return 0;if(!ma) return 1;if(!mb) return -1;
+      return mb.localeCompare(ma);
+    });break;
+  }
+  return arr;
+}
+function _sortTasks(tasks,mode){
+  var arr=tasks.map(function(t,i){return {t:t,i:i};});
+  switch(mode){
+    case 'due':arr.sort(function(a,b){
+      if(!a.t.due_date&&!b.t.due_date) return 0;
+      if(!a.t.due_date) return 1;if(!b.t.due_date) return -1;
+      return a.t.due_date.slice(0,10).localeCompare(b.t.due_date.slice(0,10));
+    });break;
+    case 'alpha':arr.sort(function(a,b){return a.t.title.localeCompare(b.t.title);});break;
+    case 'status':arr.sort(function(a,b){return (a.t.completed?1:0)-(b.t.completed?1:0);});break;
+    case 'nodate':arr.sort(function(a,b){
+      if(!a.t.due_date&&!b.t.due_date) return 0;
+      if(!a.t.due_date) return -1;if(!b.t.due_date) return 1;
+      return a.t.due_date.slice(0,10).localeCompare(b.t.due_date.slice(0,10));
+    });break;
+  }
+  return arr;
+}
 function renderClient(){
   const c=getClient(_state.clientSlug);
   if(!c) return '<div class="wrap"><p>Client not found.</p></div>';
@@ -548,7 +601,7 @@ function renderClient(){
       </div>
       ${isExpanded?`
       <div class="proj-body">
-        <div class="task-list">${p.tasks.length>0?p.tasks.map((t,ti)=>renderTask(t,ti)).join(''):'<div class="empty-state">No tasks yet.</div>'}</div>
+        <div class="task-list">${p.tasks.length>0?_sortTasks(p.tasks,_state.taskSort).map(({t,i})=>renderTask(t,i)).join(''):'<div class="empty-state">No tasks yet.</div>'}</div>
         <div style="margin-top:12px;">
           <button class="btn btn-primary btn-sm" onclick="addTask('${c.slug}',${pi})">＋ Add Task</button>
         </div>
@@ -577,8 +630,28 @@ function renderClient(){
       </div>
     </div>
     ${renderCallCharts(c)}
+    <div style="display:flex;align-items:center;gap:16px;margin:16px 0 8px;flex-wrap:wrap;">
+      <div style="display:flex;align-items:center;gap:6px;">
+        <label style="font-size:12px;font-weight:600;color:var(--text-secondary,#64748B);text-transform:uppercase;letter-spacing:0.5px;">Projects</label>
+        <select onchange="_onProjSortChange(this)" style="font-size:12px;padding:4px 8px;border:1px solid var(--border,#E2E8F0);border-radius:6px;background:var(--card-bg,#fff);color:var(--text-primary,#1E293B);cursor:pointer;">
+          <option value="alpha-az"${_state.projSort==="alpha-az"?" selected":""}>A \u2192 Z</option>
+          <option value="alpha-za"${_state.projSort==="alpha-za"?" selected":""}>Z \u2192 A</option>
+          <option value="overdue"${_state.projSort==="overdue"?" selected":""}>Most Overdue</option>
+          <option value="recent"${_state.projSort==="recent"?" selected":""}>Recently Updated</option>
+        </select>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <label style="font-size:12px;font-weight:600;color:var(--text-secondary,#64748B);text-transform:uppercase;letter-spacing:0.5px;">Tasks</label>
+        <select onchange="_onTaskSortChange(this)" style="font-size:12px;padding:4px 8px;border:1px solid var(--border,#E2E8F0);border-radius:6px;background:var(--card-bg,#fff);color:var(--text-primary,#1E293B);cursor:pointer;">
+          <option value="due"${_state.taskSort==="due"?" selected":""}>Due Date</option>
+          <option value="alpha"${_state.taskSort==="alpha"?" selected":""}>Alphabetical</option>
+          <option value="status"${_state.taskSort==="status"?" selected":""}>Status</option>
+          <option value="nodate"${_state.taskSort==="nodate"?" selected":""}>No Due Date First</option>
+        </select>
+      </div>
+    </div>
     <div class="proj-list">
-      ${c.projects.length>0?c.projects.map((p,pi)=>renderProject(p,pi)).join(''):'<div class="card empty-state">No projects yet. Add one above.</div>'}
+      ${c.projects.length>0?_sortProjects(c.projects,_state.projSort).map(({p,i})=>renderProject(p,i)).join(''):'<div class="card empty-state">No projects yet. Add one above.</div>'}
     </div>
   </div>`;
 }
