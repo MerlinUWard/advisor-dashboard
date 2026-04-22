@@ -292,6 +292,33 @@ async function loadData(){
   _syncMeta.gong  = syncRow.last_gong_sync || null;
   _syncMeta.drive = syncRow.last_moi_sync  || null;
 
+  // Build _recentSyncs: clients with call summaries created in the last 24h
+  const cutoff = new Date(Date.now() - 24*60*60*1000);
+  const roleCode = {operations:'O', finance:'F', marketing:'M'};
+  const syncMap = {};
+  callSums.forEach(r => {
+    if(!r.created_at) return;
+    if(new Date(r.created_at) < cutoff) return;
+    if(!syncMap[r.client_id]) syncMap[r.client_id] = {roles:[], latestTs: null};
+    const code = roleCode[r.role] || r.role;
+    if(!syncMap[r.client_id].roles.includes(code)) syncMap[r.client_id].roles.push(code);
+    if(!syncMap[r.client_id].latestTs || r.created_at > syncMap[r.client_id].latestTs)
+      syncMap[r.client_id].latestTs = r.created_at;
+  });
+  function _timeAgo(ts){
+    const mins = Math.round((Date.now() - new Date(ts)) / 60000);
+    if(mins < 60) return mins + 'm ago';
+    const hrs = Math.round(mins/60);
+    if(hrs < 24) return hrs + 'h ago';
+    return Math.round(hrs/24) + 'd ago';
+  }
+  _recentSyncs = Object.entries(syncMap)
+    .map(([slug, info]) => {
+      const client = CLIENTS.find(c => c.slug === slug);
+      return {slug, name: client ? client.name : slug, roles: info.roles, timeAgo: _timeAgo(info.latestTs)};
+    })
+    .sort((a,b) => syncMap[b.slug].latestTs > syncMap[a.slug].latestTs ? 1 : -1);
+
   _initClientSort();
   _initAdvClientFilter();
   render();
@@ -487,7 +514,6 @@ function renderTeam(){
     </div>
 
     ${syncedStrip(_recentSyncs||[])}
-    </div>
 
     <div style="margin-bottom:36px;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
