@@ -102,11 +102,19 @@ label{font-size:13px;font-weight:600;color:var(--text-1);display:block;margin-bo
 .theme-toggle:hover{background:var(--surface-3);}
 .theme-toggle-label{font-size:12px;font-weight:600;color:var(--text-2);}
 /* ── TEAM VIEW ────────────────────────────────────────────────────────────── */
-.moi-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px 20px;}
-.moi-row{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-radius:10px;background:var(--muted-bg);border:1px solid var(--border-light);cursor:pointer;transition:background .15s;}
-.moi-row:hover{background:var(--surface-3);}
-.moi-col{display:flex;flex-direction:column;gap:6px;}
 .today-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
+/* ── SYNCED STRIP ─────────────────────────────────────────────────────────── */
+.synced-scroll{display:flex;gap:12px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;}
+.synced-scroll::-webkit-scrollbar{display:none;}
+.synced-chip{display:flex;align-items:center;gap:12px;background:var(--surface);border:1.5px solid #10B981;border-radius:12px;padding:11px 16px;white-space:nowrap;box-shadow:0 1px 4px rgba(16,185,129,.12);flex-shrink:0;cursor:pointer;transition:box-shadow .15s;}
+.synced-chip:hover{box-shadow:0 4px 14px rgba(16,185,129,.22);}
+.synced-chip-name{font-size:14px;font-weight:700;color:var(--text-1);}
+.synced-chip-badges{display:flex;gap:4px;margin-top:3px;}
+.synced-chip-time{font-size:12px;font-weight:600;color:#10B981;margin-left:4px;align-self:center;}
+@keyframes pulse-ring{0%{transform:scale(1);opacity:.6}70%{transform:scale(1.9);opacity:0}100%{transform:scale(1.9);opacity:0}}
+.pulse-wrap{position:relative;display:inline-flex;align-items:center;justify-content:center;width:10px;height:10px;flex-shrink:0;}
+.pulse-wrap::before{content:'';position:absolute;width:10px;height:10px;border-radius:50%;background:#10B981;animation:pulse-ring 2s ease-out infinite;}
+.pulse-dot{width:8px;height:8px;border-radius:50%;background:#10B981;position:relative;z-index:1;}
 .advisor-header{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
 .avatar{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;}
 .upcoming-table{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:var(--shadow-sm);}
@@ -228,6 +236,7 @@ function pid(){ return 'p-'+(++_nextId)+'-'+Math.random().toString(36).slice(2,6
 // ─── STATE ────────────────────────────────────────────────────────────────────
 let CLIENTS = [];
 let _syncMeta = { gong: null, drive: null };
+let _recentSyncs = []; // populated from advisor_call_summaries WHERE created_at >= now-24h
 let _state = {view:'team', clientSlug:null, projIdx:null, expandedProjs:new Set(), projSort:'alpha-az', taskSort:'due', advClientFilter:'all', showCompletedTasks:new Set()};
 
 // ─── DATA LOADING ─────────────────────────────────────────────────────────────
@@ -384,17 +393,43 @@ function navigate(view,clientSlug=null,projIdx=null){
   render();window.scrollTo(0,0);
 }
 
+// ─── SYNCED STRIP ────────────────────────────────────────────────────────────
+function syncedStrip(recentSyncs){
+  if(!recentSyncs||recentSyncs.length===0){
+    return `<div style="margin-bottom:36px;">
+      <div class="sec-label">SYNCED IN LAST 24H</div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px;color:var(--text-3);font-size:13px;">
+        No Gong calls synced in the last 24 hours
+      </div>
+    </div>`;
+  }
+  function advBadgeSmall(r){
+    if(r==='O') return '<span class="badge badge-ops" style="font-size:10px;padding:2px 8px;">OPS</span>';
+    if(r==='F') return '<span class="badge badge-fin" style="font-size:10px;padding:2px 8px;">FIN</span>';
+    if(r==='M') return '<span class="badge badge-mkt" style="font-size:10px;padding:2px 8px;">MKTG</span>';
+    return '';
+  }
+  const chips=recentSyncs.map(r=>`
+    <div class="synced-chip" onclick="navigate('client','${r.slug}')">
+      <div class="pulse-wrap"><div class="pulse-dot"></div></div>
+      <div>
+        <div class="synced-chip-name">${esc(r.name)}</div>
+        <div class="synced-chip-badges">${(r.roles||[]).map(advBadgeSmall).join('')}</div>
+      </div>
+      <div class="synced-chip-time">${esc(r.timeAgo)}</div>
+    </div>`).join('');
+  return `<div style="margin-bottom:36px;">
+    <div class="sec-label" style="display:flex;align-items:center;gap:8px;">
+      <div class="pulse-wrap"><div class="pulse-dot"></div></div>
+      &nbsp;SYNCED IN LAST 24H (${recentSyncs.length})
+    </div>
+    <div class="synced-scroll">${chips}</div>
+  </div>`;
+}
+
 // ─── TEAM VIEW ────────────────────────────────────────────────────────────────
 function renderTeam(){
   const upcoming=upcomingTasks();
-  const cs=Math.ceil(CLIENTS.length/3);const col1=CLIENTS.slice(0,cs),col2=CLIENTS.slice(cs,cs*2),col3=CLIENTS.slice(cs*2);
-
-  function moiRow(c){
-    return `<div class="moi-row" onclick="navigate('client','${c.slug}')">
-      <span style="font-size:13px;font-weight:500;">${esc(c.name)}</span>
-      ${moiBadge(c.moi?c.moi.score:null)}
-    </div>`;
-  }
 
   function upcomingRow(r){
     const isToday=r.due===TODAY;
@@ -451,13 +486,7 @@ function renderTeam(){
       </div>
     </div>
 
-    <div style="margin-bottom:36px;">
-      <div class="sec-label">CLIENT SENTIMENT (MOI)</div>
-      <div class="moi-grid">
-        <div class="moi-col">${col1.map(moiRow).join('')}</div>
-        <div class="moi-col">${col2.map(moiRow).join('')}</div>
-        <div class="moi-col">${col3.map(moiRow).join('')}</div>
-      </div>
+    ${syncedStrip(_recentSyncs||[])}
     </div>
 
     <div style="margin-bottom:36px;">
