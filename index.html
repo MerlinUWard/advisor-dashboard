@@ -896,18 +896,41 @@ function showCallSummary(role, callDate){
   const entry=entries.find(e=>e.call_date===callDate);
   if(!entry) return;
   const d=entry.call_summary_detail||{};
-  const scorecard=(d.moi_scorecard||[]).map(row=>{
-    const s=row.score||0;
-    const clr=s>=4?'#10B981':s>=3?'#3B82F6':s>=2?'#F59E0B':'#EF4444';
-    return `<div class="scorecard-row"><div class="score-chip" style="color:${clr};">${s}</div>`+
-      `<div><div class="scorecard-cat">${esc(row.category)}</div><div class="scorecard-rat">${esc(row.rationale)}</div></div></div>`;
-  }).join('');
+
+  // moi_scorecard: handle legacy array {score,category,rationale} and new object {score,baseline,adjustments}
+  let scorecard='';
+  const ms=d.moi_scorecard;
+  if(Array.isArray(ms)&&ms.length){
+    scorecard=ms.map(row=>{
+      const s=row.score||0;
+      const clr=s>=4?'#10B981':s>=3?'#3B82F6':s>=2?'#F59E0B':'#EF4444';
+      return `<div class="scorecard-row"><div class="score-chip" style="color:${clr};">${s}</div>`+
+        `<div><div class="scorecard-cat">${esc(row.category||''  )}</div><div class="scorecard-rat">${esc(row.rationale||''  )}</div></div></div>`;
+    }).join('');
+  } else if(ms&&typeof ms==='object'){
+    const os=ms.score||entry.moi_score||0;
+    const oc=os>=4?'#10B981':os>=3?'#3B82F6':os>=2?'#F59E0B':'#EF4444';
+    const adjs=(ms.adjustments||[]).map(a=>{
+      const sign=a.delta>0?'+':''; const ac=a.delta>0?'#10B981':'#EF4444';
+      return `<div class="scorecard-row" style="align-items:flex-start;"><div class="score-chip" style="color:${ac};min-width:36px;">${sign}${a.delta}</div>`+
+        `<div><div class="scorecard-rat">${esc(a.note||''  )}</div></div></div>`;
+    }).join('');
+    scorecard=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">`+
+      `<div class="score-chip" style="color:${oc};font-size:15px;">${os}</div>`+
+      (ms.baseline?`<span style="font-size:11px;color:var(--text-3);">baseline ${ms.baseline}</span>`:'')+
+      `</div>${adjs}`;
+  }
+
+  // reflection_questions: support both {question,answer} and {question,evidence} key names
   const refs=(d.reflection_questions||[]).map(q=>
-    `<div class="reflection-q">${esc(q.question)}</div><div class="reflection-a">${esc(q.answer)}</div>`
+    `<div class="reflection-q">${esc(q.question||''  )}</div><div class="reflection-a">${esc(q.answer||q.evidence||''  )}</div>`
   ).join('');
-  const cvals=(d.core_values||[]).map(v=>
-    `<span style="background:var(--surface-2);border:1px solid var(--border);border-radius:6px;padding:3px 10px;font-size:11px;font-weight:700;margin-right:6px;margin-bottom:4px;display:inline-block;">${esc(v)}</span>`
-  ).join('');
+
+  // core_values: support both plain strings and {value,evidence} objects
+  const cvals=(d.core_values||[]).map(v=>{
+    const label=typeof v==='string'?v:(v&&v.value?v.value:'');
+    return `<span style="background:var(--surface-2);border:1px solid var(--border);border-radius:6px;padding:3px 10px;font-size:11px;font-weight:700;margin-right:6px;margin-bottom:4px;display:inline-block;">${esc(label)}</span>`;
+  }).join('');
   const modal=document.getElementById('call-modal-container');
   modal.innerHTML=`<div class="call-modal-bg" onclick="if(event.target===this)closeCallSummary()">`+
     `<div class="call-modal">`+
@@ -2122,18 +2145,41 @@ function showCallSummary(role, callDate){
   const entry=entries.find(e=>e.call_date===callDate);
   if(!entry) return;
   const d=entry.call_summary_detail||{};
-  const scorecard=(d.moi_scorecard||[]).map(row=>{
-    const s=row.score||0;
-    const clr=s>=4?'#10B981':s>=3?'#3B82F6':s>=2?'#F59E0B':'#EF4444';
-    return `<div class="scorecard-row"><div class="score-chip" style="color:${clr};">${s}</div>`+
-      `<div><div class="scorecard-cat">${esc(row.category)}</div><div class="scorecard-rat">${esc(row.rationale)}</div></div></div>`;
-  }).join('');
+
+  // moi_scorecard: handle legacy array {score,category,rationale} and new object {score,baseline,adjustments}
+  let scorecard='';
+  const ms=d.moi_scorecard;
+  if(Array.isArray(ms)&&ms.length){
+    scorecard=ms.map(row=>{
+      const s=row.score||0;
+      const clr=s>=4?'#10B981':s>=3?'#3B82F6':s>=2?'#F59E0B':'#EF4444';
+      return `<div class="scorecard-row"><div class="score-chip" style="color:${clr};">${s}</div>`+
+        `<div><div class="scorecard-cat">${esc(row.category||''  )}</div><div class="scorecard-rat">${esc(row.rationale||''  )}</div></div></div>`;
+    }).join('');
+  } else if(ms&&typeof ms==='object'){
+    const os=ms.score||entry.moi_score||0;
+    const oc=os>=4?'#10B981':os>=3?'#3B82F6':os>=2?'#F59E0B':'#EF4444';
+    const adjs=(ms.adjustments||[]).map(a=>{
+      const sign=a.delta>0?'+':''; const ac=a.delta>0?'#10B981':'#EF4444';
+      return `<div class="scorecard-row" style="align-items:flex-start;"><div class="score-chip" style="color:${ac};min-width:36px;">${sign}${a.delta}</div>`+
+        `<div><div class="scorecard-rat">${esc(a.note||''  )}</div></div></div>`;
+    }).join('');
+    scorecard=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">`+
+      `<div class="score-chip" style="color:${oc};font-size:15px;">${os}</div>`+
+      (ms.baseline?`<span style="font-size:11px;color:var(--text-3);">baseline ${ms.baseline}</span>`:'')+
+      `</div>${adjs}`;
+  }
+
+  // reflection_questions: support both {question,answer} and {question,evidence} key names
   const refs=(d.reflection_questions||[]).map(q=>
-    `<div class="reflection-q">${esc(q.question)}</div><div class="reflection-a">${esc(q.answer)}</div>`
+    `<div class="reflection-q">${esc(q.question||''  )}</div><div class="reflection-a">${esc(q.answer||q.evidence||''  )}</div>`
   ).join('');
-  const cvals=(d.core_values||[]).map(v=>
-    `<span style="background:var(--surface-2);border:1px solid var(--border);border-radius:6px;padding:3px 10px;font-size:11px;font-weight:700;margin-right:6px;margin-bottom:4px;display:inline-block;">${esc(v)}</span>`
-  ).join('');
+
+  // core_values: support both plain strings and {value,evidence} objects
+  const cvals=(d.core_values||[]).map(v=>{
+    const label=typeof v==='string'?v:(v&&v.value?v.value:'');
+    return `<span style="background:var(--surface-2);border:1px solid var(--border);border-radius:6px;padding:3px 10px;font-size:11px;font-weight:700;margin-right:6px;margin-bottom:4px;display:inline-block;">${esc(label)}</span>`;
+  }).join('');
   const modal=document.getElementById('call-modal-container');
   modal.innerHTML=`<div class="call-modal-bg" onclick="if(event.target===this)closeCallSummary()">`+
     `<div class="call-modal">`+
