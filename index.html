@@ -263,6 +263,7 @@ async function loadData(){
   CLIENTS = (cRes.data || []).map(c => ({
     slug: c.id,
     name: c.name,
+    clientStatus: c.status || 'active',
     moi:  c.moi_score != null ? {score: c.moi_score} : null,
     callSummaries: csMap[c.id] || {operations:[],finance:[],marketing:[]},
     projects: projects
@@ -286,7 +287,7 @@ async function loadData(){
             updated_at: t.updated_at,
           }))
       }))
-  }));
+  })).filter(c => c.clientStatus !== 'inactive');
 
   const syncRow = sRes.data || {};
   _syncMeta.gong  = syncRow.last_gong_sync || null;
@@ -473,9 +474,14 @@ function renderTeam(){
     const nd=clientNextDue(c);
     const pendingTasks=c.projects.reduce((s,p)=>s+p.tasks.filter(t=>!t.completed).length,0);
     const isUrgent=nd.date===TODAY;
-    return `<div class="client-card${isUrgent?' urgent':''}" onclick="navigate('client','${c.slug}')">
+    const isOnHold=c.clientStatus==='on_hold';
+    const onHoldStyle=isOnHold?'border-left:4px solid #EAB308;':'';
+    return `<div class="client-card${isUrgent?' urgent':''}" style="${onHoldStyle}" onclick="navigate('client','${c.slug}')">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
-        <span style="font-size:15px;font-weight:700;flex:1;padding-right:8px;">${esc(c.name)}</span>
+        <div style="display:flex;align-items:center;gap:8px;flex:1;padding-right:8px;">
+          <span style="font-size:15px;font-weight:700;">${esc(c.name)}</span>
+          ${isOnHold?'<span style="font-size:10px;font-weight:700;color:#854D0E;background:#FEF9C3;border:1px solid #EAB308;border-radius:4px;padding:1px 6px;letter-spacing:.4px;">ON HOLD</span>':''}
+        </div>
         ${moiBadge(c.moi?c.moi.score:null)}
       </div>
       <div style="font-size:13px;color:#64748B;margin-bottom:3px;">${c.projects.filter(p=>p.status==='active').length} active project${c.projects.length!==1?'s':''} · ${pendingTasks} open task${pendingTasks!==1?'s':''}</div>
@@ -1558,6 +1564,7 @@ async function loadData(){
   CLIENTS = (cRes.data || []).map(c => ({
     slug: c.id,
     name: c.name,
+    clientStatus: c.status || 'active',
     moi:  c.moi_score != null ? {score: c.moi_score} : null,
     callSummaries: csMap[c.id] || {operations:[],finance:[],marketing:[]},
     projects: projects
@@ -1581,7 +1588,7 @@ async function loadData(){
             updated_at: t.updated_at,
           }))
       }))
-  }));
+  })).filter(c => c.clientStatus !== 'inactive');
 
   const syncRow = sRes.data || {};
   _syncMeta.gong  = syncRow.last_gong_sync || null;
@@ -1715,9 +1722,14 @@ function renderTeam(){
     const nd=clientNextDue(c);
     const pendingTasks=c.projects.reduce((s,p)=>s+p.tasks.filter(t=>!t.completed).length,0);
     const isUrgent=nd.date===TODAY;
-    return `<div class="client-card${isUrgent?' urgent':''}" onclick="navigate('client','${c.slug}')">
+    const isOnHold=c.clientStatus==='on_hold';
+    const onHoldStyle=isOnHold?'border-left:4px solid #EAB308;':'';
+    return `<div class="client-card${isUrgent?' urgent':''}" style="${onHoldStyle}" onclick="navigate('client','${c.slug}')">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
-        <span style="font-size:15px;font-weight:700;flex:1;padding-right:8px;">${esc(c.name)}</span>
+        <div style="display:flex;align-items:center;gap:8px;flex:1;padding-right:8px;">
+          <span style="font-size:15px;font-weight:700;">${esc(c.name)}</span>
+          ${isOnHold?'<span style="font-size:10px;font-weight:700;color:#854D0E;background:#FEF9C3;border:1px solid #EAB308;border-radius:4px;padding:1px 6px;letter-spacing:.4px;">ON HOLD</span>':''}
+        </div>
         ${moiBadge(c.moi?c.moi.score:null)}
       </div>
       <div style="font-size:13px;color:#64748B;margin-bottom:3px;">${c.projects.filter(p=>p.status==='active').length} active project${c.projects.length!==1?'s':''} Â· ${pendingTasks} open task${pendingTasks!==1?'s':''}</div>
